@@ -3,6 +3,7 @@
 -- @param queue STRING
 -- @param start_date STRING
 -- @param end_date STRING
+-- @param contact_reason STRING
 WITH window_bounds AS (
   SELECT
     COALESCE(CASE WHEN :start_date <> '' THEN TRY_CAST(CONCAT(:start_date, 'T00:00:00Z') AS TIMESTAMP) END, DATE_TRUNC('day', MIN(started_at))) AS period_start,
@@ -18,6 +19,8 @@ WITH window_bounds AS (
   FROM serverless_stable_prvwqx_catalog.call_insights.interactions i CROSS JOIN periods p
   WHERE (:queue = '' OR i.queue = :queue)
     AND i.started_at >= p.previous_start AND i.started_at < p.period_end
+    AND (:contact_reason = '' OR EXISTS (SELECT 1 FROM serverless_stable_prvwqx_catalog.call_insights.interaction_enrichment er
+      WHERE er.interaction_id = i.interaction_id AND er.error_message IS NULL AND er.contact_reason = :contact_reason))
 ), members AS (
   SELECT s.*, m.theme_id, e.sentiment_end, e.repeat_contact_mentioned
   FROM scoped s

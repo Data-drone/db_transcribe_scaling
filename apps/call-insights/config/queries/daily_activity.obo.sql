@@ -1,6 +1,8 @@
 -- @param queue STRING
 -- @param start_date STRING
 -- @param end_date STRING
+-- @param contact_reason STRING
+-- @param theme_id STRING
 SELECT DATE_TRUNC('day', i.started_at) AS day,
   COUNT(*) AS interaction_count,
   COUNT(CASE WHEN e.sentiment_end IN ('negative', 'neutral', 'positive') THEN 1 END) AS sentiment_count,
@@ -12,5 +14,7 @@ LEFT JOIN serverless_stable_prvwqx_catalog.call_insights.interaction_enrichment 
 WHERE (:queue = '' OR i.queue = :queue)
   AND (:start_date = '' OR i.started_at >= TRY_CAST(CONCAT(:start_date, 'T00:00:00Z') AS TIMESTAMP))
   AND (:end_date = '' OR i.started_at < TRY_CAST(CONCAT(:end_date, 'T00:00:00Z') AS TIMESTAMP) + INTERVAL 1 DAY)
+  AND (:contact_reason = '' OR e.contact_reason = :contact_reason)
+  AND (:theme_id = '' OR EXISTS (SELECT 1 FROM serverless_stable_prvwqx_catalog.call_insights.theme_membership_current tm WHERE tm.interaction_id = i.interaction_id AND tm.theme_id = :theme_id))
 GROUP BY DATE_TRUNC('day', i.started_at)
 ORDER BY day

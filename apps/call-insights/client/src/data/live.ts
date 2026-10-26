@@ -1,4 +1,4 @@
-import type { ExploreFilters, LabelTracking, Scope } from '../../../shared/insights';
+import type { ExploreFilters, Focus, LabelTracking, Scope } from '../../../shared/insights';
 import {
   investigationSchema,
   investigationSummarySchema,
@@ -37,6 +37,7 @@ function query(params: Record<string, string | number | boolean | undefined>) {
   return text ? `?${text}` : '';
 }
 const scopeQuery = (scope: Scope) => ({ queue: scope.queue, start: scope.start, end: scope.end });
+const focusQuery = (focus?: Focus) => ({ focus_reason: focus?.reason, focus_theme: focus?.theme });
 const investigation = (value: unknown): Investigation => investigationSchema.parse(value);
 
 export function createLiveSource(): DataSource {
@@ -52,7 +53,7 @@ export function createLiveSource(): DataSource {
       }
     },
     bounds: () => request('/api/insights/bounds'),
-    overview: (scope) => request(`/api/insights/overview${query(scopeQuery(scope))}`),
+    overview: (scope, focus) => request(`/api/insights/overview${query({ ...scopeQuery(scope), ...focusQuery(focus) })}`),
     changes: (scope) => request(`/api/insights/changes${query(scopeQuery(scope))}`),
     explore: (scope: Scope, filters: ExploreFilters) =>
       request(
@@ -68,7 +69,8 @@ export function createLiveSource(): DataSource {
       ),
     call: (id) => request(`/api/insights/calls/${encodeURIComponent(id)}`),
     audioUrl: (id) => `/api/calls/${encodeURIComponent(id)}/audio`,
-    themes: (scope) => request(`/api/insights/themes${query(scopeQuery(scope))}`),
+    themes: (scope, focus) => request(`/api/insights/themes${query({ ...scopeQuery(scope), ...focusQuery(focus) })}`),
+    themeMap: (scope) => request(`/api/insights/themes/map${query(scopeQuery(scope))}`),
     theme: (scope, id) => request(`/api/insights/themes/${encodeURIComponent(id)}${query(scopeQuery(scope))}`),
     cases: {
       async list() {

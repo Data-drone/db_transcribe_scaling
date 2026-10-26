@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import type { CallDetail as Call, CallSegment } from '../../../shared/insights';
 import { Async, Empty, LinkBtn } from '../components/ui';
+import { transcriptPeaks, useAudioPeaks, Waveform } from '../components/Waveform';
 import { useData, useSource } from '../data/source';
 import { evidenceReturnPath, evidenceTime, returnLabel } from '../lib/evidence';
 import { fmtDate, fmtDuration, fmtTime, pct } from '../lib/format';
@@ -16,7 +17,7 @@ export function CallDetail() {
   const t = params.has('t') ? evidenceTime(params.get('t')) : undefined;
   return (
     <section className="screen">
-      <Async value={call} label="Loading conversation…">
+      <Async value={call} label="Loading conversation…" skeleton="detail">
         {(data) => <CallBody key={`${data.id}:${t ?? 0}`} call={data} from={from} jump={t} />}
       </Async>
     </section>
@@ -40,16 +41,53 @@ function CallBody({ call, from, jump }: { call: Call; from: string; jump?: numbe
   const q = query.trim().toLowerCase();
   const turns = q ? segments.filter((s) => s.text?.toLowerCase().includes(q)) : segments;
   const withheld = segments.filter((s) => s.text == null).length;
-
-  useEffect(() => {
-    if (playing) currentTurn.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-  }, [active?.idx, playing]);
-
   function seek(seconds: number) {
     const next = clamp(seconds, duration);
     setTime(next);
     player.seek(next);
   }
+  const audioPeaks = useAudioPeaks(audioUrl, segments, duration);
+  const peaks = useMemo(() => audioPeaks.peaks ?? transcriptPeaks(segments, duration), [audioPeaks.peaks, segments, duration]);
+  const playingRef = useRef(playing);
+  const timeRef = useRef(time);
+  useLayoutEffect(() => {
+    playingRef.current = playing;
+    timeRef.current = time;
+  });
+
+  useEffect(() => {
+    function onKey(event: globalThis.KeyboardEvent) {
+      const target = event.target as HTMLElement | null;
+      if (event.metaKey || event.ctrlKey || event.altKey || saveOpen) return;
+      if (target && (target.closest('input, textarea, select, [contenteditable="true"], dialog') || target.getAttribute('role') === 'slider')) return;
+      const now = timeRef.current;
+      const index = Math.max(0, segments.reduce((found, s, i) => (now >= s.start ? i : found), -1));
+      if (event.key === ' ') {
+        if (target?.closest('button, a')) return;
+        event.preventDefault();
+        if (playingRef.current) player.pause();
+        else player.play(now);
+      } else if (event.key === 'j' || event.key === 'J') {
+        const next = segments[Math.min(segments.length - 1, index + 1)];
+        if (next) seek(next.start);
+      } else if (event.key === 'k' || event.key === 'K') {
+        const prev = segments[Math.max(0, now - (segments[index]?.start ?? 0) > 1.5 ? index : index - 1)];
+        if (prev) seek(prev.start);
+      } else if (event.key === 'ArrowRight') seek(now + 5);
+      else if (event.key === 'ArrowLeft') seek(now - 5);
+      else if (event.key === 's' || event.key === 'S') {
+        player.pause();
+        setSaveOpen(true);
+      } else return;
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+
+  useEffect(() => {
+    if (playing) currentTurn.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [active?.idx, playing]);
+
 
   return (
     <>
@@ -166,30 +204,18 @@ function CallBody({ call, from, jump }: { call: Call; from: string; jump?: numbe
           </p>
         ) : null}
         {player.element}
-        <input
-          className="player-seek"
-          type="range"
-          min={0}
-          max={duration}
-          step={0.5}
-          value={time}
-          onChange={(e) => seek(Number(e.target.value))}
-          aria-label="Seek"
-          aria-valuetext={`${fmtTime(time)} of ${fmtTime(duration)}`}
+        <Waveform
+          peaks={peaks}
+          duration={duration}
+          time={time}
+          moments={call.moments}
+          sentimentStart={call.sentimentStart}
+          sentimentEnd={call.sentimentEnd}
+          onSeek={seek}
         />
-        <Lane label="Agent" className="agent" duration={duration} segs={segments.filter((s) => s.role === 'agent')} time={time} />
-        <Lane label="Customer" className="cust" duration={duration} segs={segments.filter((s) => s.role === 'customer')} time={time} />
-        <div className="row small muted">
-          <span>
-            <span className="sw" style={{ background: 'var(--agent)' }} />
-            Agent
-          </span>
-          <span>
-            <span className="sw" style={{ background: 'var(--cust)' }} />
-            Customer
-          </span>
-          <span>Choose a transcript turn or key moment to seek</span>
-        </div>
+        <p className="small muted shortcut-hint">
+          <kbd>Space</kbd> play/pause · <kbd>J</kbd>/<kbd>K</kbd> next/previous turn · <kbd>←</kbd>/<kbd>→</kbd> 5 seconds · <kbd>S</kbd> save evidence
+        </p>
       </div>
 
       <div className="detail-grid cols">
@@ -202,7 +228,11 @@ function CallBody({ call, from, jump }: { call: Call; from: string; jump?: numbe
           </div>
           <ul className="turns">
             {turns.map((s) => (
-              <li key={s.idx} className={active?.idx === s.idx ? 'on' : ''}>
+              <li
+                key={s.idx}
+                className={active?.idx === s.idx ? 'on' : ''}
+                style={active?.idx === s.idx ? ({ '--p': `${Math.min(100, Math.max(0, ((time - s.start) / Math.max(0.1, s.end - s.start)) * 100))}%` } as CSSProperties) : undefined}
+              >
                 <button
                   className="turn-button"
                   type="button"
@@ -529,20 +559,6 @@ function SaveEvidence({ call, initial, onClose }: { call: Call; initial?: CallSe
         </div>
       </form>
     </dialog>
-  );
-}
-
-function Lane({ label, className, duration, segs, time }: { label: string; className: string; duration: number; segs: CallSegment[]; time: number }) {
-  return (
-    <div className={`lane ${className}`}>
-      <span>{label}</span>
-      <div className="track" role="img" aria-label={`${label} speaking segments`}>
-        {segs.map((s) => (
-          <s key={s.idx} style={{ left: `${(s.start / duration) * 100}%`, width: `${((s.end - s.start) / duration) * 100}%` }} />
-        ))}
-        <div className="playhead" style={{ left: `${(time / duration) * 100}%` }} />
-      </div>
-    </div>
   );
 }
 

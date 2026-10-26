@@ -1,6 +1,7 @@
 import type { Bounds, ExploreFilters, Scope, Sentiment } from '../../../shared/insights';
 
-export type Period = 'all' | '1d' | '7d' | '30d' | '90d';
+/** Relative periods anchor on the latest recording; `d:YYYY-MM-DD` is one chosen day. */
+export type Period = 'all' | '1d' | '7d' | '30d' | '90d' | `d:${string}`;
 export const PERIODS: { value: Period; label: string; days: number | null }[] = [
   { value: 'all', label: 'All recordings', days: null },
   { value: '1d', label: 'Latest day', days: 1 },
@@ -11,9 +12,16 @@ export const PERIODS: { value: Period; label: string; days: number | null }[] = 
 export type ScopeSelection = { period: Period; queue: string };
 export const DEFAULT_SCOPE: ScopeSelection = { period: 'all', queue: '' };
 
+const DAY = /^d:(\d{4}-\d{2}-\d{2})$/;
 export function readPeriod(value: string | null): Period {
+  // Round-trip the date: JavaScript silently rolls impossible days (30 Feb) into the next month.
+  const day = value && DAY.test(value) ? value.slice(2) : '';
+  const parsed = day ? new Date(`${day}T00:00:00Z`) : null;
+  if (parsed && !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === day) return value as Period;
   return PERIODS.some((p) => p.value === value) ? (value as Period) : DEFAULT_SCOPE.period;
 }
+export const dayPeriod = (date: string): Period => `d:${date}`;
+export const periodDay = (period: Period) => DAY.exec(period)?.[1] ?? '';
 export function readSelection(params: URLSearchParams, fallback: ScopeSelection = DEFAULT_SCOPE): ScopeSelection {
   const queue = params.get('queue');
   return {
@@ -33,6 +41,8 @@ const addDays = (value: string, days: number) => {
 
 /** Periods are anchored on the latest recording in the data, not on today's date. */
 export function scopeFor(selection: ScopeSelection, bounds: Bounds | undefined): Scope {
+  const day = periodDay(selection.period);
+  if (day) return { queue: selection.queue, start: day, end: day };
   const days = PERIODS.find((p) => p.value === selection.period)?.days ?? null;
   if (!days || !bounds?.maxDate) return { queue: selection.queue, start: '', end: '' };
   return { queue: selection.queue, start: addDays(bounds.maxDate, -(days - 1)), end: bounds.maxDate };

@@ -1,22 +1,42 @@
-import type { ChangesData, OverviewData, ThemesData } from '../../../shared/insights';
+import { useSearchParams } from 'react-router';
+import type { ChangesData, Focus, OverviewData, Scope, ThemesData } from '../../../shared/insights';
+import { ReasonChart, VolumeChart } from '../components/LazyCharts';
 import { Filters, useUrlScope } from '../components/Filters';
 import { Icon } from '../components/Icon';
-import { Trend } from '../components/Trend';
-import { Async, Empty, ErrorNote, Kpi, LinkBtn, Loading } from '../components/ui';
+import { Async, CountUp, Empty, ErrorNote, Kpi, LinkBtn, Loading } from '../components/ui';
 import { useData } from '../data/source';
 import { fmtDuration } from '../lib/format';
-import { metricChange, rangeLabel } from '../lib/scope';
+import { dayPeriod, metricChange, periodDay, rangeLabel } from '../lib/scope';
 import type { Route } from '../router';
 import { useWorkspace } from '../store';
 
 export function Overview() {
-  const { scope } = useUrlScope();
+  const { scope, selection } = useUrlScope();
+  const [params, setParams] = useSearchParams();
   const { bounds } = useWorkspace();
-  const key = JSON.stringify(scope);
+  const focus: Focus = { reason: params.get('focus_reason') ?? '', theme: params.get('focus_theme') ?? '' };
+  const key = JSON.stringify({ scope, focus });
   const ready = bounds.data !== undefined || bounds.error !== null;
-  const overview = useData(`overview:${key}`, (source) => source.overview(scope), ready);
-  const changes = useData(`changes:${key}`, (source) => source.changes(scope), ready);
-  const themes = useData(`themes:${key}`, (source) => source.themes(scope), ready);
+  const overview = useData(`overview:${key}`, (source) => source.overview(scope, focus), ready);
+  const changes = useData(`changes:${JSON.stringify(scope)}`, (source) => source.changes(scope), ready);
+  const themes = useData(`themes:${JSON.stringify({ scope, reason: focus.reason })}`, (source) => source.themes(scope, { reason: focus.reason, theme: '' }), ready);
+  const previousScope = overview.data && overview.data.previousCalls > 0 ? previousOf(scope, overview.data) : null;
+  const previous = useData(`overview-prev:${JSON.stringify({ previousScope, focus })}`, (source) => source.overview(previousScope!, focus), Boolean(previousScope));
+
+  function setFocus(patch: Partial<Focus> & { day?: string }) {
+    const next = new URLSearchParams(params);
+    for (const [k, v] of Object.entries({ focus_reason: patch.reason, focus_theme: patch.theme }))
+      if (v === undefined) continue;
+      else if (v) next.set(k, v);
+      else next.delete(k);
+    if (patch.day) {
+      next.set('period', dayPeriod(patch.day));
+      next.set('queue', selection.queue || 'all');
+    }
+    setParams(next, { replace: !patch.day });
+  }
+  const themeName = themes.data?.themes.find((t) => t.id === focus.theme)?.name ?? focus.theme;
+
   return (
     <section className="screen overview-screen">
       <div className="row between page-heading">
@@ -29,12 +49,25 @@ export function Overview() {
         </div>
         <Filters />
       </div>
-      <Async value={overview} label="Loading conversation metrics…">
+      <FocusBar
+        focus={focus}
+        themeName={themeName}
+        reasons={overview.data?.reasons.map((r) => r.name) ?? []}
+        themes={themes.data?.themes.filter((t) => t.calls > 0) ?? []}
+        day={periodDay(selection.period)}
+        onFocus={setFocus}
+        onClearDay={() => {
+          const next = new URLSearchParams(params);
+          next.set('period', 'all');
+          setParams(next);
+        }}
+      />
+      <Async value={overview} label="Loading conversation metrics…" skeleton="overview">
         {(data) => (
           <>
             <Kpis data={data} />
             {data.calls === 0 ? (
-              <Empty>No conversations in this scope. Choose another queue or a longer period.</Empty>
+              <Empty>No conversations match this focus. Remove a filter above, or choose another queue or a longer period.</Empty>
             ) : (
               <>
                 <div className="overview-grid">
@@ -42,10 +75,30 @@ export function Overview() {
                   <WorkflowCard />
                 </div>
                 <div className="overview-grid charts-grid">
-                  <Trend overview={data} />
-                  <Reasons data={data} />
+                  <div className="box volume-panel">
+                    <div className="row between">
+                      <div className="column">
+                        <h3>Conversation volume</h3>
+                        <span className="small muted">
+                          Calls per recording day · {rangeLabel(data.periodStart, data.periodEnd)}
+                          {previous.data ? ' · grey: “Calls before”, the same day in the previous equal period' : ''}
+                        </span>
+                      </div>
+                      <span className="chart-total">
+                        <CountUp value={data.calls} />
+                        <small>calls</small>
+                      </span>
+                    </div>
+                    {data.daily.length ? (
+                      <VolumeChart current={data} previous={previous.data} focusDay={periodDay(selection.period)} onDay={(day) => setFocus({ day })} />
+                    ) : (
+                      <p className="muted small">No recordings in this period.</p>
+                    )}
+                    <span className="small muted">Hover for counts. Click a day to focus the whole overview on it.</span>
+                  </div>
+                  <Reasons data={data} focus={focus.reason} onFocus={(reason) => setFocus({ reason })} />
                 </div>
-                <Patterns value={themes.data} error={themes.error} retry={themes.reload} total={data.calls} />
+                <Patterns value={themes.data} error={themes.error} retry={themes.reload} focus={focus.theme} onFocus={(theme) => setFocus({ theme })} />
               </>
             )}
             <p className="data-footnote">
@@ -60,6 +113,82 @@ export function Overview() {
   );
 }
 
+function previousOf(scope: Scope, data: OverviewData): Scope {
+  const end = new Date(`${data.periodStart}T00:00:00Z`);
+  end.setUTCDate(end.getUTCDate() - 1);
+  return { queue: scope.queue, start: data.previousStart, end: end.toISOString().slice(0, 10) };
+}
+
+function FocusBar({
+  focus,
+  themeName,
+  reasons,
+  themes,
+  day,
+  onFocus,
+  onClearDay,
+}: {
+  focus: Focus;
+  themeName: string;
+  reasons: string[];
+  themes: { id: string; name: string }[];
+  day: string;
+  onFocus: (patch: Partial<Focus>) => void;
+  onClearDay: () => void;
+}) {
+  const active = Boolean(focus.reason || focus.theme || day);
+  return (
+    <div className={`focus-bar${active ? ' active' : ''}`} aria-label="Overview focus">
+      <span className="eyebrow">FOCUS</span>
+      {day ? (
+        <button className="focus-chip" type="button" onClick={onClearDay}>
+          Day · {rangeLabel(day, day)} <span aria-hidden="true">×</span>
+          <span className="sr-only">Remove day focus</span>
+        </button>
+      ) : null}
+      {focus.reason ? (
+        <button className="focus-chip" type="button" onClick={() => onFocus({ reason: '' })}>
+          Reason · {focus.reason} <span aria-hidden="true">×</span>
+          <span className="sr-only">Remove reason focus</span>
+        </button>
+      ) : null}
+      {focus.theme ? (
+        <button className="focus-chip" type="button" onClick={() => onFocus({ theme: '' })}>
+          Theme · {themeName} <span aria-hidden="true">×</span>
+          <span className="sr-only">Remove theme focus</span>
+        </button>
+      ) : null}
+      {!active ? <span className="small muted">Click a day, a reason or a theme below to focus every panel on it.</span> : null}
+      <span className="focus-pickers">
+        <label className="sr-only" htmlFor="focus-reason">
+          Focus on a contact reason
+        </label>
+        <select id="focus-reason" className="select compact" value={focus.reason} onChange={(e) => onFocus({ reason: e.target.value })}>
+          <option value="">Any reason</option>
+          {focus.reason && !reasons.includes(focus.reason) ? <option value={focus.reason}>{focus.reason}</option> : null}
+          {reasons.map((r) => (
+            <option key={r} value={r}>
+              {r}
+            </option>
+          ))}
+        </select>
+        <label className="sr-only" htmlFor="focus-theme">
+          Focus on a theme
+        </label>
+        <select id="focus-theme" className="select compact" value={focus.theme} onChange={(e) => onFocus({ theme: e.target.value })}>
+          <option value="">Any theme</option>
+          {focus.theme && !themes.some((t) => t.id === focus.theme) ? <option value={focus.theme}>{themeName}</option> : null}
+          {themes.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.name}
+            </option>
+          ))}
+        </select>
+      </span>
+    </div>
+  );
+}
+
 function Kpis({ data }: { data: OverviewData }) {
   const tone = (current: number | null, previous: number | null) =>
     current != null && previous != null && current > previous ? 'bad' : 'neutral';
@@ -67,7 +196,7 @@ function Kpis({ data }: { data: OverviewData }) {
     <div className="kpis">
       <Kpi
         label="Calls in scope"
-        value={data.calls.toLocaleString()}
+        value={<CountUp value={data.calls} />}
         delta={data.previousCalls ? metricChange(data.calls, data.previousCalls, 'percent') : 'No calls in the previous equal period'}
       />
       <Kpi
@@ -78,7 +207,7 @@ function Kpis({ data }: { data: OverviewData }) {
       />
       <Kpi
         label="Negative closing sentiment"
-        value={data.negativeShare != null ? `${Math.round(data.negativeShare * 100)}%` : '—'}
+        value={data.negativeShare != null ? <CountUp value={data.negativeShare * 100} format={(n) => `${Math.round(n)}%`} /> : '—'}
         delta={
           data.sentimentEvaluated
             ? `${data.sentimentEvaluated.toLocaleString()} evaluated · ${metricChange(data.negativeShare, data.previousSentimentEvaluated ? data.previousNegativeShare : null, 'points')}`
@@ -88,7 +217,7 @@ function Kpis({ data }: { data: OverviewData }) {
       />
       <Kpi
         label="Repeat contact mentioned"
-        value={data.repeatShare != null ? `${Math.round(data.repeatShare * 100)}%` : '—'}
+        value={data.repeatShare != null ? <CountUp value={data.repeatShare * 100} format={(n) => `${Math.round(n)}%`} /> : '—'}
         delta={data.repeatEvaluated ? `${data.repeatEvaluated.toLocaleString()} evaluated · mention, not a measured repeat rate` : 'Not evaluated in this scope'}
       />
     </div>
@@ -208,7 +337,7 @@ function WorkflowCard() {
   );
 }
 
-function Reasons({ data }: { data: OverviewData }) {
+function Reasons({ data, focus, onFocus }: { data: OverviewData; focus: string; onFocus: (reason: string) => void }) {
   const total = data.reasons.reduce((sum, r) => sum + r.calls, 0);
   return (
     <div className="box reason-panel">
@@ -219,33 +348,39 @@ function Reasons({ data }: { data: OverviewData }) {
             AI contact reason · {total.toLocaleString()} of {data.calls.toLocaleString()} calls evaluated
           </span>
         </div>
-        <Icon name="explore" size={17} />
+        {focus ? (
+          <LinkBtn className="subtle-link" to={{ name: 'explore', filters: { reason: focus } }}>
+            Open calls <Icon name="arrow" size={14} />
+          </LinkBtn>
+        ) : (
+          <Icon name="explore" size={17} />
+        )}
       </div>
       {data.reasons.length ? (
-        <div className="reason-bars">
-          {data.reasons.slice(0, 9).map((reason) => (
-            <LinkBtn key={reason.name} className="reason-row" to={{ name: 'explore', filters: { reason: reason.name } }}>
-              <span className="row between">
-                <span>{reason.name}</span>
-                <b>
-                  {reason.calls.toLocaleString()} <Icon name="chevron" size={12} />
-                </b>
-              </span>
-              <span className="reason-track">
-                <i style={{ width: `${(reason.calls / Math.max(total, 1)) * 100}%` }} />
-              </span>
-            </LinkBtn>
-          ))}
-        </div>
+        <ReasonChart reasons={data.reasons} selected={focus} onSelect={onFocus} />
       ) : (
         <p className="muted small">No contact reasons have been evaluated in this scope yet.</p>
       )}
-      <span className="small muted">Select a reason to explore the same cohort.</span>
+      <span className="small muted">Click a reason to focus the overview on it; click again to clear.</span>
     </div>
   );
 }
 
-function Patterns({ value, error, retry, total }: { value: ThemesData | undefined; error: import('../data/source').DataError | null; retry: () => void; total: number }) {
+function Patterns({
+  value,
+  error,
+  retry,
+  focus,
+  onFocus,
+}: {
+  value: ThemesData | undefined;
+  error: import('../data/source').DataError | null;
+  retry: () => void;
+  focus: string;
+  onFocus: (theme: string) => void;
+}) {
+  const shown = value?.themes.filter((t) => t.calls > 0).slice(0, 6) ?? [];
+  const max = Math.max(...shown.map((t) => t.calls), 1);
   return (
     <div className="box patterns-panel">
       <div className="row between">
@@ -257,9 +392,11 @@ function Patterns({ value, error, retry, total }: { value: ThemesData | undefine
               : 'Clusters of similar conversations'}
           </span>
         </div>
-        <LinkBtn className="subtle-link" to={{ name: 'themes' }}>
-          All themes <Icon name="arrow" size={15} />
-        </LinkBtn>
+        <div className="row">
+          <LinkBtn className="subtle-link" to={{ name: 'themes' }}>
+            Theme map <Icon name="arrow" size={15} />
+          </LinkBtn>
+        </div>
       </div>
       {error ? (
         <ErrorNote error={error} retry={retry} />
@@ -269,26 +406,33 @@ function Patterns({ value, error, retry, total }: { value: ThemesData | undefine
         <p className="muted">No theme run has completed yet. Run the theme builder job to discover themes across enriched calls.</p>
       ) : (
         <div className="pattern-list">
-          {value.themes
-            .filter((t) => t.calls > 0)
-            .slice(0, 6)
-            .map((theme, index) => (
-              <LinkBtn key={theme.id} className="pattern-row" to={{ name: 'theme', id: theme.id }}>
+          {shown.map((theme, index) => {
+            const change = theme.previousCalls ? (theme.calls - theme.previousCalls) / theme.previousCalls : null;
+            return (
+              <div key={theme.id} className={`pattern-row${focus === theme.id ? ' focused' : ''}`}>
                 <span className="pattern-number">{String(index + 1).padStart(2, '0')}</span>
-                <span className="pattern-title">
+                <button className="pattern-title pattern-focus" type="button" aria-pressed={focus === theme.id} onClick={() => onFocus(focus === theme.id ? '' : theme.id)}>
                   {theme.name}
-                  <small>{theme.topQueue ? `Mostly ${theme.topQueue}` : ''}</small>
-                </span>
-                <span className="pattern-meter">
-                  <i style={{ width: `${(theme.calls / Math.max(total, 1)) * 100}%` }} />
+                  <small>
+                    {theme.topQueue ? `Mostly ${theme.topQueue}` : ''}
+                    {change != null ? ` · ${change > 0 ? '▲' : '▼'} ${Math.abs(Math.round(change * 100))}% vs previous` : ''}
+                  </small>
+                </button>
+                <span className="pattern-meter" aria-hidden="true">
+                  <i style={{ width: `${(theme.calls / max) * 100}%` }} />
                 </span>
                 <b>{theme.calls.toLocaleString()} calls</b>
-                <Icon name="arrow" size={17} />
-              </LinkBtn>
-            ))}
-          {!value.themes.some((t) => t.calls > 0) ? <p className="muted">No themed calls in this scope.</p> : null}
+                <LinkBtn className="pattern-open" to={{ name: 'theme', id: theme.id }}>
+                  <Icon name="arrow" size={17} />
+                  <span className="sr-only">Open {theme.name}</span>
+                </LinkBtn>
+              </div>
+            );
+          })}
+          {!shown.length ? <p className="muted">No themed calls in this scope.</p> : null}
         </div>
       )}
+      <span className="small muted">Click a theme name to focus the overview on it. The arrow opens the theme.</span>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import type { ThemeDetail as Detail } from '../../../shared/insights';
 import { Filters, useUrlScope } from '../components/Filters';
 import { Icon } from '../components/Icon';
 import { Async, Bars, Empty, Kpi, LinkBtn } from '../components/ui';
+import { ThemeMap } from '../components/ThemeMap';
 import { useData, useSource } from '../data/source';
 import { fmtDate, fmtDuration, fmtTime } from '../lib/format';
 import { fmtDay, scopeLabel, selectionParams } from '../lib/scope';
@@ -25,7 +26,7 @@ export function Themes() {
         </div>
         <Filters />
       </div>
-      <Async value={themes} label="Loading themes…">
+      <Async value={themes} label="Loading themes…" skeleton="list">
         {(data) =>
           !data.run ? (
             <Empty>
@@ -43,6 +44,7 @@ export function Themes() {
                   {data.run.purity != null ? ` · ${Math.round(data.run.purity * 100)}% agreement with reference intents` : ''}
                 </span>
               </div>
+              <MapPanel scope={scope} themes={data.themes} />
               <div className="box">
                 <table className="data">
                   <thead>
@@ -91,7 +93,7 @@ export function ThemeDetail() {
       <div className="crumb">
         <LinkBtn to={{ name: 'themes' }}>Themes</LinkBtn> / Pattern
       </div>
-      <Async value={detail} label="Loading theme…">
+      <Async value={detail} label="Loading theme…" skeleton="detail">
         {(data) => <ThemeBody data={data} />}
       </Async>
     </section>
@@ -284,5 +286,32 @@ function QueueRow({ queue, calls, duration }: { queue: string; calls: number; du
         {calls} calls{duration != null ? ` · ${fmtDuration(duration)} avg duration` : ''}
       </dd>
     </>
+  );
+}
+
+function MapPanel({ scope, themes }: { scope: import('../../../shared/insights').Scope; themes: import('../../../shared/insights').ThemeSummary[] }) {
+  const navigate = useNavigate();
+  const { selection } = useWorkspace();
+  const map = useData(`theme-map:${JSON.stringify(scope)}`, (source) => source.themeMap(scope));
+  const from = `/themes?${new URLSearchParams(selectionParams(selection)).toString()}`;
+  return (
+    <div className="box">
+      <div className="row between">
+        <div className="column">
+          <h3>Theme map</h3>
+          <span className="small muted">Every themed call in scope, placed by similarity</span>
+        </div>
+        {map.data ? <span className="small muted">{map.data.points.length.toLocaleString()} calls{map.data.truncated ? ' (first 5,000)' : ''}</span> : null}
+      </div>
+      <Async value={map} label="Placing calls…">
+        {(data) =>
+          data.points.length ? (
+            <ThemeMap points={data.points} themes={themes} onOpen={(id) => void navigate(toPath({ name: 'call', id, from }))} />
+          ) : (
+            <Empty>No themed calls with map positions in this scope. Re-run the theme builder to add map coordinates.</Empty>
+          )
+        }
+      </Async>
+    </div>
   );
 }

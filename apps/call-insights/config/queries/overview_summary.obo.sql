@@ -1,6 +1,8 @@
 -- @param queue STRING
 -- @param start_date STRING
 -- @param end_date STRING
+-- @param contact_reason STRING
+-- @param theme_id STRING
 WITH window_bounds AS (
   SELECT
     COALESCE(CASE WHEN :start_date <> '' THEN TRY_CAST(CONCAT(:start_date, 'T00:00:00Z') AS TIMESTAMP) END, DATE_TRUNC('day', MIN(started_at))) AS period_start,
@@ -32,6 +34,8 @@ LEFT JOIN serverless_stable_prvwqx_catalog.call_insights.interaction_enrichment 
 WHERE (:queue = '' OR i.queue = :queue)
   AND (:start_date = '' OR i.started_at >= TRY_CAST(CONCAT(:start_date, 'T00:00:00Z') AS TIMESTAMP))
   AND (:end_date = '' OR i.started_at < TRY_CAST(CONCAT(:end_date, 'T00:00:00Z') AS TIMESTAMP) + INTERVAL 1 DAY)
+  AND (:contact_reason = '' OR e.contact_reason = :contact_reason)
+  AND (:theme_id = '' OR EXISTS (SELECT 1 FROM serverless_stable_prvwqx_catalog.call_insights.theme_membership_current tm WHERE tm.interaction_id = i.interaction_id AND tm.theme_id = :theme_id))
 ), previous_period AS (
   SELECT COUNT(*) AS previous_interaction_count,
     ROUND(AVG(i.duration_seconds), 1) AS previous_avg_duration_seconds,
@@ -46,6 +50,8 @@ WHERE (:queue = '' OR i.queue = :queue)
   WHERE (:queue = '' OR i.queue = :queue)
     AND i.started_at >= TIMESTAMPADD(DAY, -TIMESTAMPDIFF(DAY, b.period_start, b.period_end), b.period_start)
     AND i.started_at < b.period_start
+    AND (:contact_reason = '' OR e.contact_reason = :contact_reason)
+    AND (:theme_id = '' OR EXISTS (SELECT 1 FROM serverless_stable_prvwqx_catalog.call_insights.theme_membership_current tm WHERE tm.interaction_id = i.interaction_id AND tm.theme_id = :theme_id))
 )
 SELECT c.*, p.*, b.period_start, b.period_end,
   TIMESTAMPADD(DAY, -TIMESTAMPDIFF(DAY, b.period_start, b.period_end), b.period_start) AS previous_period_start

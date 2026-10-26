@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import type { Investigation } from '../../../shared/investigations';
 import { Async, Empty, Kpi, LinkBtn } from '../components/ui';
@@ -31,7 +31,7 @@ export function Cases() {
         {source.mode === 'fixtures' ? 'Fixture cases saved in this browser' : 'Saved to your workspace · shared only with people you name'}
         <span className="muted">Opening a case re-checks each source call against the reader’s own permissions</span>
       </div>
-      <Async value={cases} label="Loading investigations…">
+      <Async value={cases} label="Loading investigations…" skeleton="list">
         {(list) =>
           list.length === 0 ? (
             <Empty>
@@ -124,6 +124,67 @@ export function CaseDetail() {
   );
 }
 
+/** Play each saved clip in order: original audio when available, otherwise read the excerpt aloud. */
+function useCasePlayback(record: Investigation) {
+  const source = useSource();
+  const audio = useRef<HTMLAudioElement | null>(null);
+  const run = useRef(0);
+  const [current, setCurrent] = useState<string | null>(null);
+  const clips = record.items.filter((it) => it.type === 'clip' && it.interactionId);
+  const stop = () => {
+    run.current += 1;
+    audio.current?.pause();
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    setCurrent(null);
+  };
+  useEffect(() => () => stop(), []);
+  function playFrom(index: number, token: number) {
+    const clip = clips[index];
+    if (!clip || token !== run.current) return setCurrent(null);
+    setCurrent(clip.id);
+    const next = () => token === run.current && playFrom(index + 1, token);
+    const url = source.audioUrl(clip.interactionId ?? '');
+    if (url) {
+      const el = (audio.current ??= new Audio());
+      const start = clip.start ?? 0;
+      const end = clip.end ?? start + 10;
+      el.ontimeupdate = () => {
+        if (el.currentTime >= end) {
+          el.pause();
+          next();
+        }
+      };
+      el.onerror = next;
+      const begin = () => {
+        el.currentTime = start;
+        el.play().catch(next);
+      };
+      if (el.src.endsWith(url)) begin();
+      else {
+        el.src = url;
+        el.onloadedmetadata = begin;
+      }
+    } else if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(record.excerpts[clip.id]?.text || clip.note);
+      utterance.lang = 'en-AU';
+      utterance.onend = next;
+      utterance.onerror = next;
+      window.speechSynthesis.speak(utterance);
+    } else next();
+  }
+  return {
+    available: clips.length > 0,
+    count: clips.length,
+    current,
+    position: current ? clips.findIndex((c) => c.id === current) + 1 : 0,
+    play: () => {
+      stop();
+      playFrom(0, ++run.current);
+    },
+    stop,
+  };
+}
+
 function CaseBody({ record, onChange }: { record: Investigation; onChange: (value: Investigation) => void }) {
   const source = useSource();
   const [message, setMessage] = useState('');
@@ -138,6 +199,7 @@ function CaseBody({ record, onChange }: { record: Investigation; onChange: (valu
   const notes = record.items.filter((it) => it.type === 'note');
   const context = record.items.filter((it) => it.type === 'theme' || it.type === 'label');
   const from = `/cases/${record.id}`;
+  const playback = useCasePlayback(record);
 
   async function act(work: () => Promise<Investigation>, done: string) {
     setBusy(true);
@@ -260,7 +322,14 @@ function CaseBody({ record, onChange }: { record: Investigation; onChange: (valu
         <div className="box">
           <div className="row between">
             <h3>Collected evidence</h3>
-            <LinkBtn to={{ name: 'explore' }}>+ Find more calls</LinkBtn>
+            <div className="row">
+              {playback.available ? (
+                <button className={`btn${playback.current ? '' : ' primary'}`} type="button" onClick={playback.current ? playback.stop : playback.play}>
+                  {playback.current ? `■ Stop · clip ${playback.position} of ${playback.count}` : `▶ Play evidence (${playback.count})`}
+                </button>
+              ) : null}
+              <LinkBtn to={{ name: 'explore' }}>+ Find more calls</LinkBtn>
+            </div>
           </div>
           <p className="small muted">Open each source to inspect the surrounding conversation before drawing a conclusion.</p>
           {!clips.length && !context.length ? (
@@ -273,7 +342,7 @@ function CaseBody({ record, onChange }: { record: Investigation; onChange: (valu
                 .filter((it) => it.type !== 'note')
                 .map((it) =>
                   it.type === 'clip' ? (
-                    <article className="evidence-card" key={it.id}>
+                    <article className={`evidence-card${playback.current === it.id ? ' now-playing' : ''}`} key={it.id} aria-current={playback.current === it.id ? 'true' : undefined}>
                       <div className="row between">
                         <span className="eyebrow">EVIDENCE {String(clips.indexOf(it) + 1).padStart(2, '0')}</span>
                         {record.excerpts[it.id]?.queue ? <span className="tag">{record.excerpts[it.id].queue}</span> : null}

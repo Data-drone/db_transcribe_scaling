@@ -169,7 +169,7 @@ function NavLink({ item, current }: { item: NavItem; current: boolean }) {
       onClick={(event) => {
         if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
         event.preventDefault();
-        void navigate(toPath(item.route, selection));
+        void navigate(toPath(item.route, selection), { viewTransition: true });
       }}
     >
       <Icon name={item.icon} />

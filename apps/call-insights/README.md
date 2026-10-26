@@ -48,6 +48,14 @@ Locally, `pnpm dev` runs the real server against Databricks. AppKit 0.84's devel
 
 Scope parameters are `queue`, `start` and `end` (`YYYY-MM-DD`). The UI's periods (latest day, 7, 30, 90 days, all) are anchored on the latest recording in the data, not today's date.
 
+## Interaction design
+
+- **Overview cross-filtering.** Click a day in the volume chart to focus the page on that day, compared with the day before. Click a contact reason or theme to focus every panel on it. Each focus is a URL parameter (`period=d:YYYY-MM-DD`, `focus_reason`, `focus_theme`) shown as a removable chip, with select controls as the keyboard-accessible equivalent. Grey bars show the same day in the previous equal period.
+- **Call player.** The original stereo recording is decoded in the browser into a waveform per speaker; channels are matched to agent and customer by comparing energy with the transcript's turns. Key moments are markers, the AI sentiment shift is a strip beneath, and the active transcript turn shows playback progress. Shortcuts: Space, J/K, ←/→, S. Fixture calls use a waveform shaped from transcript timing.
+- **Theme map** (`/themes`). Every themed call drawn at its 2-D position from the theme builder (PCA, then t-SNE over the same embeddings). The three largest themes use colours validated for colour-vision deficiency on the dark surface; the rest fold into "Other". Pick a theme in the legend to highlight it. Requires the `map_x`/`map_y` columns: re-run `resources/theme-tables.sql` (or `ALTER TABLE ... ADD COLUMNS`) and the theme builder.
+- **Labels and cases.** Live run progress while the worker evaluates, a tracked-prevalence line chart that calls out day-over-day jumps, and "Play evidence" on a case, which plays each saved clip in order from the original recording.
+- Charts use AppKit UI's ECharts components and load on first use. Motion is short and switches off under `prefers-reduced-motion`.
+
 ## Themes, What's changed and tracked labels
 
 These three features are new backends. Set them up in this order with the project profile:

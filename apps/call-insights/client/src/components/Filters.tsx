@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router';
-import { PERIODS, readSelection, scopeFor, rangeLabel, type ScopeSelection } from '../lib/scope';
+import { PERIODS, periodDay, readSelection, scopeFor, rangeLabel, type ScopeSelection } from '../lib/scope';
 import { useWorkspace } from '../store';
 
 /** Keep the workspace scope in step with the page URL (period + queue). */
@@ -31,6 +31,7 @@ export function Filters({ onChange }: { onChange?: (selection: ScopeSelection) =
       <label>
         Period{bounds.data?.maxDate ? ` · data to ${rangeLabel(bounds.data.maxDate, bounds.data.maxDate)}` : ''}
         <select className="select" value={selection.period} onChange={(e) => update({ period: e.target.value as ScopeSelection['period'] })}>
+          {periodDay(selection.period) ? <option value={selection.period}>Day · {rangeLabel(periodDay(selection.period), periodDay(selection.period))}</option> : null}
           {PERIODS.map((p) => {
             const scope = scopeFor({ ...selection, period: p.value }, bounds.data);
             return (

@@ -4,10 +4,12 @@ import type {
   ChangesData,
   ExploreData,
   ExploreFilters,
+  Focus,
   LabelTracking,
   OverviewData,
   Scope,
   ThemeDetail,
+  ThemeMapData,
   ThemesData,
   ThemeSummary,
 } from '../../../../shared/insights';
@@ -44,10 +46,17 @@ function window(scope: Scope) {
   const length = daysBetween(start, end) + 1;
   return { start, end, previousStart: addDays(start, -length), previousEnd: addDays(start, -1) };
 }
-function calls(scope: Scope, period: 'current' | 'previous' = 'current') {
+function calls(scope: Scope, period: 'current' | 'previous' = 'current', focus?: Focus) {
   const w = window(scope);
   const [from, to] = period === 'current' ? [w.start, w.end] : [w.previousStart, w.previousEnd];
-  return INTERACTIONS.filter((c) => (!scope.queue || c.queue === scope.queue) && day(c) >= from && day(c) <= to);
+  return INTERACTIONS.filter(
+    (c) =>
+      (!scope.queue || c.queue === scope.queue) &&
+      day(c) >= from &&
+      day(c) <= to &&
+      (!focus?.reason || c.contactReason === focus.reason) &&
+      (!focus?.theme || c.themes.includes(focus.theme))
+  );
 }
 const firstCustomer = (call: Interaction) =>
   call.segments.find((s) => s.role === 'customer' && maskedText(s.text).length > 40 && !maskedText(s.text).includes('[account number hidden]')) ??
@@ -223,9 +232,10 @@ export function resetFixtures() {
 
 // ---- analytics -------------------------------------------------------------------------------
 
-function themeSummaries(scope: Scope): ThemeSummary[] {
-  const current = calls(scope);
-  const previous = calls(scope, 'previous');
+function themeSummaries(scope: Scope, focus?: Focus): ThemeSummary[] {
+  const reasonOnly = focus?.reason ? { reason: focus.reason, theme: '' } : undefined;
+  const current = calls(scope, 'current', reasonOnly);
+  const previous = calls(scope, 'previous', reasonOnly);
   return THEMES.map((theme) => {
     const members = current.filter((c) => c.themes.includes(theme.id));
     const queueCounts = new Map<string, number>();
@@ -407,12 +417,13 @@ export function createFixtureSource(): DataSource {
         recordingDays: new Set(INTERACTIONS.map(day)).size,
         queues: [...QUEUES].sort(),
       }),
-    overview(scope): Promise<OverviewData> {
+    overview(scope, focus): Promise<OverviewData> {
       const w = window(scope);
-      const current = calls(scope);
-      const previous = calls(scope, 'previous');
+      const current = calls(scope, 'current', focus);
+      const previous = calls(scope, 'previous', focus);
       const reasons = new Map<string, Interaction[]>();
-      for (const c of current) reasons.set(c.contactReason, [...(reasons.get(c.contactReason) ?? []), c]);
+      // Reasons are filtered by theme only, so the chart can highlight the focused reason among the rest.
+      for (const c of calls(scope, 'current', focus?.theme ? { reason: '', theme: focus.theme } : undefined)) reasons.set(c.contactReason, [...(reasons.get(c.contactReason) ?? []), c]);
       const length = daysBetween(w.start, w.end) + 1;
       return delay({
         periodStart: w.start,
@@ -485,13 +496,36 @@ export function createFixtureSource(): DataSource {
       return call ? delay(toCall(call)) : fail('Call not found in the fixture data.');
     },
     audioUrl: () => null,
-    themes(scope): Promise<ThemesData> {
-      const current = calls(scope);
+    themes(scope, focus): Promise<ThemesData> {
+      const current = calls(scope, 'current', focus?.reason ? { reason: focus.reason, theme: '' } : undefined);
       return delay({
         run: FIXTURE_RUN,
         callsInScope: current.length,
         themedInScope: current.filter((c) => c.themes.length).length,
-        themes: themeSummaries(scope),
+        themes: themeSummaries(scope, focus),
+      });
+    },
+    themeMap(scope): Promise<ThemeMapData> {
+      // Fixture positions: each theme gets a fixed centre, calls scatter around it deterministically.
+      const centres = THEMES.map((_, i) => ({ x: 0.2 + 0.6 * ((i * 0.37) % 1), y: 0.25 + 0.5 * ((i * 0.61) % 1) }));
+      const hash = (text: string, salt: number) => [...text].reduce((h, ch) => (h * 31 + ch.charCodeAt(0) + salt) % 1000, 7) / 1000;
+      return delay({
+        points: calls(scope)
+          .filter((c) => c.themes.length)
+          .map((c) => {
+            const t = THEMES.findIndex((th) => th.id === c.themes[0]);
+            return {
+              id: c.id,
+              theme: c.themes[0],
+              x: centres[t].x + (hash(c.id, 1) - 0.5) * 0.16,
+              y: centres[t].y + (hash(c.id, 2) - 0.5) * 0.16,
+              queue: c.queue,
+              day: day(c),
+              durationSeconds: c.durationSeconds,
+              sentimentEnd: c.sentimentEnd,
+            };
+          }),
+        truncated: false,
       });
     },
     theme(scope, id): Promise<ThemeDetail> {

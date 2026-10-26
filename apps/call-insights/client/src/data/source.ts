@@ -6,10 +6,12 @@ import type {
   DataMode,
   ExploreData,
   ExploreFilters,
+  Focus,
   LabelTracking,
   OverviewData,
   Scope,
   ThemeDetail,
+  ThemeMapData,
   ThemesData,
 } from '../../../shared/insights';
 import type {
@@ -66,14 +68,15 @@ export interface DataSource {
   describe: string;
   identity(): Promise<{ email: string | null; name: string | null }>;
   bounds(): Promise<Bounds>;
-  overview(scope: Scope): Promise<OverviewData>;
+  overview(scope: Scope, focus?: Focus): Promise<OverviewData>;
   changes(scope: Scope): Promise<ChangesData>;
   explore(scope: Scope, filters: ExploreFilters): Promise<ExploreData>;
   call(id: string): Promise<CallDetail>;
   /** URL of original recording audio, or null when only synthetic preview is possible. */
   audioUrl(id: string): string | null;
-  themes(scope: Scope): Promise<ThemesData>;
+  themes(scope: Scope, focus?: Focus): Promise<ThemesData>;
   theme(scope: Scope, id: string): Promise<ThemeDetail>;
+  themeMap(scope: Scope): Promise<ThemeMapData>;
   cases: CaseApi;
   labels: LabelApi;
 }

@@ -8,13 +8,16 @@ import type {
   CallDetail,
   ChangesData,
   ExploreData,
+  Focus,
   OverviewData,
   Scope,
   ThemeDetail,
+  ThemeMapData,
   ThemeRun,
   ThemesData,
   ThemeSummary,
 } from '../../shared/insights';
+import { NO_FOCUS } from '../../shared/insights';
 import { HttpError, requestActor, respondError } from '../investigations/storage';
 
 type Marker = ReturnType<typeof sql.string> | ReturnType<typeof sql.number>;
@@ -44,6 +47,7 @@ const QUERY_NAMES = [
   'themes_list',
   'theme_breakdown',
   'theme_calls',
+  'theme_map',
 ] as const;
 export type InsightsQueryName = (typeof QUERY_NAMES)[number];
 export const PAGE_SIZE = 25;
@@ -149,6 +153,13 @@ export function createInsightsQueries(appkit: InsightsAnalytics, root = process.
 }
 export type InsightsQueryRunner = ReturnType<typeof createInsightsQueries>;
 
+/** Overview cross-filter: narrows metrics to one contact reason and/or theme. */
+export function parseFocus(query: unknown): Focus {
+  const input = flat(query);
+  const reason = z.string().max(200).default('').parse(input.focus_reason ?? '');
+  const theme = z.union([z.literal(''), themeIdSchema]).default('').parse(input.focus_theme ?? '');
+  return { reason, theme };
+}
 const scopeParams = (scope: Scope): Params => ({
   queue: sql.string(scope.queue),
   start_date: sql.string(scope.start),
@@ -167,12 +178,14 @@ export async function loadBounds(run: InsightsQueryRunner, req: IAppRequest): Pr
   };
 }
 
-export async function loadOverview(run: InsightsQueryRunner, req: IAppRequest, scope: Scope): Promise<OverviewData> {
+export async function loadOverview(run: InsightsQueryRunner, req: IAppRequest, scope: Scope, focus: Focus = NO_FOCUS): Promise<OverviewData> {
   const params = scopeParams(scope);
+  const theme = { theme_id: sql.string(focus.theme) };
+  const both = { ...params, ...theme, contact_reason: sql.string(focus.reason) };
   const [summaryRows, reasons, daily] = await Promise.all([
-    run(req, 'overview_summary', params),
-    run(req, 'overview_contact_reasons', params),
-    run(req, 'daily_activity', params),
+    run(req, 'overview_summary', both),
+    run(req, 'overview_contact_reasons', { ...params, ...theme }),
+    run(req, 'daily_activity', both),
   ]);
   const s = summaryRows[0] ?? {};
   return {
@@ -211,7 +224,7 @@ export async function loadChanges(
   options: { minCalls: number; threshold: number }
 ): Promise<ChangesData> {
   const params = scopeParams(scope);
-  const summary = (await run(req, 'overview_summary', params))[0] ?? {};
+  const summary = (await run(req, 'overview_summary', { ...params, contact_reason: sql.string(''), theme_id: sql.string('') }))[0] ?? {};
   const previousCalls = int(summary.previous_interaction_count);
   const base = { previousStart: date(summary.previous_period_start), previousCalls, threshold: options.threshold, minCalls: options.minCalls };
   if (!previousCalls) return { comparable: false, ...base, changes: [] };
@@ -361,8 +374,8 @@ function themeSummary(row: Row): ThemeSummary {
   };
 }
 
-export async function loadThemes(run: InsightsQueryRunner, req: IAppRequest, scope: Scope): Promise<ThemesData> {
-  const rows = await run(req, 'themes_list', scopeParams(scope));
+export async function loadThemes(run: InsightsQueryRunner, req: IAppRequest, scope: Scope, focus: Focus = NO_FOCUS): Promise<ThemesData> {
+  const rows = await run(req, 'themes_list', { ...scopeParams(scope), contact_reason: sql.string(focus.reason) });
   if (!rows.length) return { run: null, callsInScope: 0, themedInScope: 0, themes: [] };
   return {
     run: themeRun(rows[0]),
@@ -375,7 +388,7 @@ export async function loadThemes(run: InsightsQueryRunner, req: IAppRequest, sco
 export async function loadTheme(run: InsightsQueryRunner, req: IAppRequest, scope: Scope, id: string): Promise<ThemeDetail> {
   const params = { ...scopeParams(scope), theme_id: sql.string(id) };
   const [list, breakdown, calls] = await Promise.all([
-    run(req, 'themes_list', scopeParams(scope)),
+    run(req, 'themes_list', { ...scopeParams(scope), contact_reason: sql.string('') }),
     run(req, 'theme_breakdown', params),
     run(req, 'theme_calls', params),
   ]);
@@ -403,6 +416,25 @@ export async function loadTheme(run: InsightsQueryRunner, req: IAppRequest, scop
   };
 }
 
+export async function loadThemeMap(run: InsightsQueryRunner, req: IAppRequest, scope: Scope): Promise<ThemeMapData> {
+  const rows = await run(req, 'theme_map', scopeParams(scope));
+  return {
+    points: rows
+      .map((r) => ({
+        id: asText(r.interaction_id),
+        theme: asText(r.theme_id),
+        x: num(r.map_x) ?? NaN,
+        y: num(r.map_y) ?? NaN,
+        queue: asText(r.queue),
+        day: date(r.day),
+        durationSeconds: num(r.duration_seconds) ?? 0,
+        sentimentEnd: str(r.sentiment_end),
+      }))
+      .filter((p) => Number.isFinite(p.x) && Number.isFinite(p.y)),
+    truncated: rows.length >= 5000,
+  };
+}
+
 const notSetUp = (feature: string) =>
   new HttpError(
     503,
@@ -424,7 +456,7 @@ export function registerInsightsRoutes(app: Router, run: InsightsQueryRunner) {
       }
     };
   app.get('/api/insights/bounds', handle((req) => loadBounds(run, req)));
-  app.get('/api/insights/overview', handle((req) => loadOverview(run, req, parseScope(req.query))));
+  app.get('/api/insights/overview', handle((req) => loadOverview(run, req, parseScope(req.query), parseFocus(req.query)), 'Theme focus'));
   app.get(
     '/api/insights/changes',
     handle((req) => {
@@ -441,7 +473,9 @@ export function registerInsightsRoutes(app: Router, run: InsightsQueryRunner) {
     }, 'Theme filtering')
   );
   app.get('/api/insights/calls/:id', handle((req) => loadCall(run, req, interactionIdSchema.parse(req.params.id))));
-  app.get('/api/insights/themes', handle((req) => loadThemes(run, req, parseScope(req.query)), 'Themes'));
+  app.get('/api/insights/themes', handle((req) => loadThemes(run, req, parseScope(req.query), parseFocus(req.query)), 'Themes'));
+  // Registered before /themes/:id so "map" is never read as a theme identifier.
+  app.get('/api/insights/themes/map', handle((req) => loadThemeMap(run, req, parseScope(req.query)), 'Theme map'));
   app.get(
     '/api/insights/themes/:id',
     handle((req) => loadTheme(run, req, parseScope(req.query), themeIdSchema.parse(req.params.id)), 'Themes')

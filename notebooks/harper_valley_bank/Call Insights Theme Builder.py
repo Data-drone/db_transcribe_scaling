@@ -7,7 +7,8 @@
 # MAGIC 2. Cluster with k-means, choosing k by silhouette score within `k_min`..`k_max`.
 # MAGIC 3. Name each cluster from its most central calls with an LLM, using structured output.
 # MAGIC 4. Keep theme IDs stable across runs by matching new centroids to the previous run's centroids.
-# MAGIC 5. Score agreement with the HarperValleyBank reference intent (`hvb_calls.task_type`) as a quality signal.
+# MAGIC 5. Project every call to 2-D (PCA then t-SNE) for the app's theme map.
+# MAGIC 6. Score agreement with the HarperValleyBank reference intent (`hvb_calls.task_type`) as a quality signal.
 # MAGIC
 # MAGIC Contact reason is deliberately **not** embedded: it is a fixed list of the eight intents, so including it would
 # MAGIC just reproduce that list. A run is published (`status = 'completed'`) only after every table write succeeds;
@@ -24,6 +25,8 @@ from datetime import datetime, timezone
 
 import numpy as np
 from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
 from sklearn.metrics import silhouette_score
 
 for name, default in [
@@ -62,7 +65,11 @@ spark.sql(f"""CREATE TABLE IF NOT EXISTS {FQ}.themes (
   theme_id STRING, run_id STRING, name STRING, description STRING, size BIGINT,
   centroid ARRAY<DOUBLE>, created_at TIMESTAMP) USING DELTA""")
 spark.sql(f"""CREATE TABLE IF NOT EXISTS {FQ}.theme_membership (
-  run_id STRING, theme_id STRING, interaction_id STRING, distance DOUBLE) USING DELTA""")
+  run_id STRING, theme_id STRING, interaction_id STRING, distance DOUBLE,
+  map_x DOUBLE, map_y DOUBLE) USING DELTA""")
+# Tables created before the theme map existed gain the 2-D coordinate columns.
+if "map_x" not in spark.table(f"{FQ}.theme_membership").columns:
+    spark.sql(f"ALTER TABLE {FQ}.theme_membership ADD COLUMNS (map_x DOUBLE, map_y DOUBLE)")
 spark.sql(f"""CREATE OR REPLACE VIEW {FQ}.theme_run_current AS
   SELECT * FROM {FQ}.theme_runs WHERE status = 'completed'
   QUALIFY ROW_NUMBER() OVER (ORDER BY created_at DESC, run_id) = 1""")
@@ -70,7 +77,7 @@ spark.sql(f"""CREATE OR REPLACE VIEW {FQ}.themes_current AS
   SELECT t.theme_id, t.run_id, t.name, t.description, t.size, t.created_at
   FROM {FQ}.themes t JOIN {FQ}.theme_run_current r USING (run_id)""")
 spark.sql(f"""CREATE OR REPLACE VIEW {FQ}.theme_membership_current AS
-  SELECT m.run_id, m.theme_id, m.interaction_id, m.distance
+  SELECT m.run_id, m.theme_id, m.interaction_id, m.distance, m.map_x, m.map_y
   FROM {FQ}.theme_membership m JOIN {FQ}.theme_run_current r USING (run_id)""")
 
 def record_run(status, **fields):
@@ -128,6 +135,14 @@ labels = model.labels_
 centroids = model.cluster_centers_ / np.clip(np.linalg.norm(model.cluster_centers_, axis=1, keepdims=True), 1e-12, None)
 distances = 1.0 - np.einsum("ij,ij->i", X, centroids[labels])
 print("silhouette by k:", {k: round(v, 3) for k, v in scores.items()}, "→ chose", best_k)
+
+# COMMAND ----------
+# DBTITLE 1,2-D map coordinates (for display only; clustering uses the full embedding)
+reduced = PCA(n_components=min(50, X.shape[1], X.shape[0] - 1), random_state=17).fit_transform(X)
+perplexity = float(max(5, min(30, (X.shape[0] - 1) // 4)))
+coords = TSNE(n_components=2, perplexity=perplexity, init="pca", random_state=17, metric="cosine").fit_transform(reduced)
+coords = (coords - coords.min(axis=0)) / np.clip(coords.max(axis=0) - coords.min(axis=0), 1e-9, None)
+print(f"Projected {coords.shape[0]} calls to 2-D (perplexity {perplexity})")
 
 # COMMAND ----------
 # DBTITLE 1,Name each theme from its most central calls
@@ -206,7 +221,7 @@ for c in range(best_k):
     name, description = theme_text(c)
     theme_rows.append((theme_ids[c], RUN_ID, name, description, int((labels == c).sum()), [float(v) for v in centroids[c]], NOW))
 spark.createDataFrame(theme_rows, spark.table(f"{FQ}.themes").schema).write.mode("append").saveAsTable(f"{FQ}.themes")
-member_rows = [(RUN_ID, theme_ids[int(labels[i])], ids[i], float(distances[i])) for i in range(len(ids))]
+member_rows = [(RUN_ID, theme_ids[int(labels[i])], ids[i], float(distances[i]), float(coords[i, 0]), float(coords[i, 1])) for i in range(len(ids))]
 spark.createDataFrame(member_rows, spark.table(f"{FQ}.theme_membership").schema).write.mode("append").saveAsTable(f"{FQ}.theme_membership")
 record_run("completed", k=best_k, silhouette=scores[best_k], calls_themed=len(ids), purity=purity,
            notes=json.dumps({"silhouette_by_k": scores, "reused_ids": len(assigned)}))

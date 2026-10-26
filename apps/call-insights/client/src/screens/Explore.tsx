@@ -147,7 +147,7 @@ export function Explore() {
         ) : null}
       </div>
 
-      <Async value={results} label="Searching conversations…">
+      <Async value={results} label="Searching conversations…" skeleton="list">
         {(data) => {
           const pages = Math.max(1, Math.ceil(data.total / data.pageSize));
           const page = Math.min(filters.page, pages);

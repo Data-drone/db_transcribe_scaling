@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import type { LabelTracking } from '../../../shared/insights';
 import type { IntelligenceLabel, LabelInput, LabelRun, RunEstimate } from '../../../shared/intelligence';
-import { Async, Bars, Empty, Kpi, LinkBtn, Loading } from '../components/ui';
+import { TrackingChart } from '../components/LazyCharts';
+import { trackingJumps } from '../lib/tracking';
+import { Async, Bars, CountUp, Empty, Kpi, LinkBtn } from '../components/ui';
 import { useData, useSource } from '../data/source';
 import { fmtDate, fmtTime, pct } from '../lib/format';
 import { fmtDay } from '../lib/scope';
@@ -322,7 +324,7 @@ function RunSummary({ run }: { run: LabelRun }) {
   const evaluated = run.processed_count - run.error_count;
   return (
     <>
-      {ACTIVE.includes(run.status) ? <Loading label={`Evaluating · ${run.processed_count} of ${run.interactions_in_scope} processed`} /> : null}
+      {ACTIVE.includes(run.status) ? <RunProgress run={run} /> : null}
       <div className="kpis">
         <Kpi label="Calls matched" value={evaluated ? pct(run.matched_count / evaluated) : '—'} delta={`${run.matched_count.toLocaleString()} of ${evaluated.toLocaleString()} evaluated`} />
         <Kpi label="Errors / ungrounded" value={`${run.error_count} / ${run.ungrounded_count}`} delta="Errors are not counted as non-matches" tone={run.error_count || run.ungrounded_count ? 'bad' : 'neutral'} />
@@ -488,24 +490,42 @@ function TrackingToggle({ labelId, version, tracking, fullDone, onChange }: { la
   );
 }
 
+function RunProgress({ run }: { run: LabelRun }) {
+  const share = run.interactions_in_scope ? run.processed_count / run.interactions_in_scope : 0;
+  return (
+    <div className="run-progress" role="status" aria-live="polite">
+      <div className="row between small">
+        <span>
+          {run.status === 'pending' ? 'Waiting for the worker to start' : 'Evaluating calls'} · <CountUp value={run.processed_count} /> of{' '}
+          {run.interactions_in_scope.toLocaleString()}
+        </span>
+        <span>
+          <CountUp value={run.matched_count} /> matched so far
+        </span>
+      </div>
+      <div className="progress-track" aria-hidden="true">
+        <i className={run.status === 'pending' ? 'indeterminate' : undefined} style={{ width: `${Math.max(3, share * 100)}%` }} />
+      </div>
+    </div>
+  );
+}
+
 function TrackingTrend({ tracking }: { tracking: LabelTracking }) {
-  const max = Math.max(...tracking.points.map((p) => (p.evaluated ? p.matched / p.evaluated : 0)), 0.01);
+  const jumps = trackingJumps(tracking.points);
   return (
     <div style={{ marginTop: 16 }}>
       <h3>Tracked prevalence</h3>
-      {tracking.points.length ? (
-        <div className="mini-trend" role="img" aria-label="Share of evaluated calls matching this label per recording day">
-          {tracking.points.map((p) => (
-            <span key={p.date} title={`${fmtDay(p.date)}: ${p.matched} of ${p.evaluated}`}>
-              <i style={{ height: `${((p.evaluated ? p.matched / p.evaluated : 0) / max) * 100}%` }} />
-              <small>{fmtDay(p.date, false)}</small>
-            </span>
+      {tracking.points.length ? <TrackingChart points={tracking.points} /> : <p className="small muted">No evaluated calls yet.</p>}
+      {jumps.length ? (
+        <ul className="jump-list">
+          {jumps.slice(-3).map((j) => (
+            <li key={j.date} className={j.delta > 0 ? 'delta-bad' : 'delta-good'}>
+              {j.delta > 0 ? '▲' : '▼'} {Math.abs(Math.round(j.delta * 100))} pts on {fmtDay(j.date)} ({Math.round(j.share * 100)}% of {j.evaluated} calls)
+            </li>
           ))}
-        </div>
-      ) : (
-        <p className="small muted">No evaluated calls yet.</p>
-      )}
-      <p className="small muted">Share of evaluated calls matching, per recording day, from the full run plus daily tracking runs.</p>
+        </ul>
+      ) : null}
+      <p className="small muted">Share of evaluated calls matching, per recording day, from the full run plus daily tracking runs. Hover for counts.</p>
     </div>
   );
 }

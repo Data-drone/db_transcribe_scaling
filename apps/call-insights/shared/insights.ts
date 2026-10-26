@@ -3,6 +3,9 @@
  * (live warehouse data and offline fixtures). Dates are YYYY-MM-DD; '' means unbounded.
  */
 export type Scope = { queue: string; start: string; end: string };
+/** Overview cross-filter. Empty strings mean no filter. */
+export type Focus = { reason: string; theme: string };
+export const NO_FOCUS: Focus = { reason: '', theme: '' };
 
 export type Bounds = {
   minDate: string;
@@ -161,6 +164,18 @@ export type ThemeDetail = {
   daily: { date: string; calls: number }[];
   representatives: ThemeRepresentative[];
 };
+
+export type ThemeMapPoint = {
+  id: string;
+  theme: string;
+  x: number;
+  y: number;
+  queue: string;
+  day: string;
+  durationSeconds: number;
+  sentimentEnd: string | null;
+};
+export type ThemeMapData = { points: ThemeMapPoint[]; truncated: boolean };
 
 export type TrackingPoint = { date: string; evaluated: number; matched: number };
 export type LabelTracking = {

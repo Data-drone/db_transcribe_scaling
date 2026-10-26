@@ -1,0 +1,585 @@
+{
+  "validated_at_utc": "2026-10-25T13:51:48.248996+00:00",
+  "app_url": "https://call-insights-7474659004185848.aws.databricksapps.com",
+  "profile": "fevm-serverless-stable-prvwqx",
+  "method": "Authenticated HTTPS reads of the deployed app using a memory-only selected-profile bearer token; no forwarded identity headers. Typed SQL markers, JSON_ARRAY, and SSE result/error inspection.",
+  "outcome": "passed",
+  "identity": {
+    "http_status": 200,
+    "email": "brian.law@databricks.com",
+    "user_present": true,
+    "forwarded_identity_headers_sent": false
+  },
+  "html": {
+    "path": "/",
+    "http_status": 200,
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 1091,
+    "asset_references_found": 2
+  },
+  "assets": [
+    {
+      "path": "/assets/index-C3iEIKVi.js",
+      "http_status": 200,
+      "content_type": "application/javascript; charset=UTF-8",
+      "elapsed_ms": 3819,
+      "bytes": 1276788,
+      "sha256": "3f41bd7664be025dc6e47151816b7cb8431df9b8d1e513788d05e5d20b6d0c62"
+    },
+    {
+      "path": "/assets/index-C57ewYLr.css",
+      "http_status": 200,
+      "content_type": "text/css; charset=UTF-8",
+      "elapsed_ms": 1883,
+      "bytes": 140057,
+      "sha256": "6024d55ec73b681ceb6953bdb85de2d745b2cc59259f797162d46a98520490fa"
+    }
+  ],
+  "checks": {
+    "overview_explore_all_parity": true,
+    "payments_all_count_matches_genie_350_11": true,
+    "overview_explore_queue_date_parity": true,
+    "adjacent_pages_25_disjoint_and_ordered": true,
+    "masked_search_count_rows_and_timestamp_match": true,
+    "unobserved_dates_do_not_substitute_historical_calls": true
+  },
+  "analytics_requests": [
+    {
+      "test": "overview_all",
+      "query_key": "overview_summary",
+      "parameters": {
+        "queue": "",
+        "start_date": "",
+        "end_date": ""
+      },
+      "path": "/api/analytics/query/overview_summary",
+      "http_status": 200,
+      "content_type": "text/event-stream; charset=utf-8",
+      "elapsed_ms": 2114,
+      "sse_result_received": true,
+      "sse_error_received": false,
+      "row_count": 1,
+      "verified_values": {
+        "interaction_count": "1446",
+        "enriched_count": "50",
+        "sentiment_count": "50",
+        "repeat_evaluated_count": "50",
+        "negative_share": "0.000",
+        "repeat_share": "0.000",
+        "period_start": "2020-03-15T00:00:00.000Z",
+        "period_end": "2020-06-03T00:00:00.000Z",
+        "previous_interaction_count": "0"
+      }
+    },
+    {
+      "test": "explore_all_count",
+      "query_key": "explore_count",
+      "parameters": {
+        "queue": "",
+        "start_date": "",
+        "end_date": "",
+        "min_silence": 0,
+        "search_text": "",
+        "contact_reason": "",
+        "sentiment": "",
+        "enriched_only": "false"
+      },
+      "path": "/api/analytics/query/explore_count",
+      "http_status": 200,
+      "content_type": "text/event-stream; charset=utf-8",
+      "elapsed_ms": 1915,
+      "sse_result_received": true,
+      "sse_error_received": false,
+      "row_count": 1,
+      "verified_values": {
+        "total_count": "1446",
+        "enriched_count": "50",
+        "masked_complete_count": "50",
+        "scope_count": "1446",
+        "scope_enriched_count": "50",
+        "latest_processed_at": "2026-10-22T23:50:50.754Z"
+      }
+    },
+    {
+      "test": "daily_activity_all",
+      "query_key": "daily_activity",
+      "parameters": {
+        "queue": "",
+        "start_date": "",
+        "end_date": ""
+      },
+      "path": "/api/analytics/query/daily_activity",
+      "http_status": 200,
+      "content_type": "text/event-stream; charset=utf-8",
+      "elapsed_ms": 1695,
+      "sse_result_received": true,
+      "sse_error_received": false,
+      "row_count": 4,
+      "verified_values": [
+        {
+          "day": "2020-03-15T00:00:00.000Z",
+          "interaction_count": "477",
+          "sentiment_count": "16",
+          "negative_count": "0",
+          "negative_share": "0.000"
+        },
+        {
+          "day": "2020-05-30T00:00:00.000Z",
+          "interaction_count": "439",
+          "sentiment_count": "14",
+          "negative_count": "0",
+          "negative_share": "0.000"
+        },
+        {
+          "day": "2020-06-01T00:00:00.000Z",
+          "interaction_count": "121",
+          "sentiment_count": "4",
+          "negative_count": "0",
+          "negative_share": "0.000"
+        },
+        {
+          "day": "2020-06-02T00:00:00.000Z",
+          "interaction_count": "409",
+          "sentiment_count": "16",
+          "negative_count": "0",
+          "negative_share": "0.000"
+        }
+      ]
+    },
+    {
+      "test": "contact_reasons_all",
+      "query_key": "overview_contact_reasons",
+      "parameters": {
+        "queue": "",
+        "start_date": "",
+        "end_date": ""
+      },
+      "path": "/api/analytics/query/overview_contact_reasons",
+      "http_status": 200,
+      "content_type": "text/event-stream; charset=utf-8",
+      "elapsed_ms": 1931,
+      "sse_result_received": true,
+      "sse_error_received": false,
+      "row_count": 8,
+      "verified_values": [
+        {
+          "contact_reason": "check balance",
+          "interaction_count": "9"
+        },
+        {
+          "contact_reason": "replace card",
+          "interaction_count": "8"
+        },
+        {
+          "contact_reason": "get branch hours",
+          "interaction_count": "7"
+        },
+        {
+          "contact_reason": "transfer money",
+          "interaction_count": "7"
+        },
+        {
+          "contact_reason": "schedule appointment",
+          "interaction_count": "6"
+        },
+        {
+          "contact_reason": "order checks",
+          "interaction_count": "5"
+        },
+        {
+          "contact_reason": "pay bill",
+          "interaction_count": "4"
+        },
+        {
+          "contact_reason": "reset password",
+          "interaction_count": "4"
+        }
+      ]
+    },
+    {
+      "test": "overview_payments_all",
+      "query_key": "overview_summary",
+      "parameters": {
+        "queue": "Payments",
+        "start_date": "",
+        "end_date": ""
+      },
+      "path": "/api/analytics/query/overview_summary",
+      "http_status": 200,
+      "content_type": "text/event-stream; charset=utf-8",
+      "elapsed_ms": 2632,
+      "sse_result_received": true,
+      "sse_error_received": false,
+      "row_count": 1,
+      "verified_values": {
+        "interaction_count": "350",
+        "enriched_count": "11"
+      }
+    },
+    {
+      "test": "explore_payments_all_count",
+      "query_key": "explore_count",
+      "parameters": {
+        "queue": "Payments",
+        "start_date": "",
+        "end_date": "",
+        "min_silence": 0,
+        "search_text": "",
+        "contact_reason": "",
+        "sentiment": "",
+        "enriched_only": "false"
+      },
+      "path": "/api/analytics/query/explore_count",
+      "http_status": 200,
+      "content_type": "text/event-stream; charset=utf-8",
+      "elapsed_ms": 3470,
+      "sse_result_received": true,
+      "sse_error_received": false,
+      "row_count": 1,
+      "verified_values": {
+        "total_count": "350",
+        "enriched_count": "11",
+        "masked_complete_count": "11",
+        "scope_count": "350",
+        "scope_enriched_count": "11",
+        "latest_processed_at": "2026-10-22T23:50:50.754Z"
+      }
+    },
+    {
+      "test": "overview_payments_june_1_2",
+      "query_key": "overview_summary",
+      "parameters": {
+        "queue": "Payments",
+        "start_date": "2020-06-01",
+        "end_date": "2020-06-02"
+      },
+      "path": "/api/analytics/query/overview_summary",
+      "http_status": 200,
+      "content_type": "text/event-stream; charset=utf-8",
+      "elapsed_ms": 1749,
+      "sse_result_received": true,
+      "sse_error_received": false,
+      "row_count": 1,
+      "verified_values": {
+        "interaction_count": "120",
+        "enriched_count": "6",
+        "previous_interaction_count": "124",
+        "previous_sentiment_count": "3",
+        "period_start": "2020-06-01T00:00:00.000Z",
+        "period_end": "2020-06-03T00:00:00.000Z",
+        "previous_period_start": "2020-05-30T00:00:00.000Z"
+      }
+    },
+    {
+      "test": "explore_payments_june_1_2_count",
+      "query_key": "explore_count",
+      "parameters": {
+        "queue": "Payments",
+        "start_date": "2020-06-01",
+        "end_date": "2020-06-02",
+        "min_silence": 0,
+        "search_text": "",
+        "contact_reason": "",
+        "sentiment": "",
+        "enriched_only": "false"
+      },
+      "path": "/api/analytics/query/explore_count",
+      "http_status": 200,
+      "content_type": "text/event-stream; charset=utf-8",
+      "elapsed_ms": 1811,
+      "sse_result_received": true,
+      "sse_error_received": false,
+      "row_count": 1,
+      "verified_values": {
+        "total_count": "120",
+        "enriched_count": "6",
+        "masked_complete_count": "6",
+        "scope_count": "120",
+        "scope_enriched_count": "6",
+        "latest_processed_at": "2026-10-22T23:50:50.754Z"
+      }
+    },
+    {
+      "test": "payments_june_1_2_page_1",
+      "query_key": "explore_interactions",
+      "parameters": {
+        "queue": "Payments",
+        "start_date": "2020-06-01",
+        "end_date": "2020-06-02",
+        "min_silence": 0,
+        "search_text": "",
+        "contact_reason": "",
+        "sentiment": "",
+        "enriched_only": "false",
+        "page_size": 25,
+        "row_offset": 0
+      },
+      "path": "/api/analytics/query/explore_interactions",
+      "http_status": 200,
+      "content_type": "text/event-stream; charset=utf-8",
+      "elapsed_ms": 2737,
+      "sse_result_received": true,
+      "sse_error_received": false,
+      "row_count": 25,
+      "verified_values": {
+        "first_interaction_id": "edede009f53d4ebc",
+        "last_interaction_id": "6a17abf3451348ca",
+        "all_rows_in_scope": true,
+        "pending_mask_previews_withheld": true
+      }
+    },
+    {
+      "test": "payments_june_1_2_page_2",
+      "query_key": "explore_interactions",
+      "parameters": {
+        "queue": "Payments",
+        "start_date": "2020-06-01",
+        "end_date": "2020-06-02",
+        "min_silence": 0,
+        "search_text": "",
+        "contact_reason": "",
+        "sentiment": "",
+        "enriched_only": "false",
+        "page_size": 25,
+        "row_offset": 25
+      },
+      "path": "/api/analytics/query/explore_interactions",
+      "http_status": 200,
+      "content_type": "text/event-stream; charset=utf-8",
+      "elapsed_ms": 1802,
+      "sse_result_received": true,
+      "sse_error_received": false,
+      "row_count": 25,
+      "verified_values": {
+        "first_interaction_id": "a7a7d37628c14327",
+        "last_interaction_id": "7f63d5fd91954113",
+        "all_rows_in_scope": true,
+        "pending_mask_previews_withheld": true
+      }
+    },
+    {
+      "test": "balance_search_count",
+      "query_key": "explore_count",
+      "parameters": {
+        "queue": "",
+        "start_date": "",
+        "end_date": "",
+        "min_silence": 0,
+        "search_text": "balance",
+        "contact_reason": "",
+        "sentiment": "",
+        "enriched_only": "false"
+      },
+      "path": "/api/analytics/query/explore_count",
+      "http_status": 200,
+      "content_type": "text/event-stream; charset=utf-8",
+      "elapsed_ms": 1779,
+      "sse_result_received": true,
+      "sse_error_received": false,
+      "row_count": 1,
+      "verified_values": {
+        "total_count": "9",
+        "enriched_count": "9",
+        "masked_complete_count": "9",
+        "scope_count": "1446",
+        "scope_enriched_count": "50",
+        "latest_processed_at": "2026-10-22T23:50:50.754Z"
+      }
+    },
+    {
+      "test": "balance_search_rows",
+      "query_key": "explore_interactions",
+      "parameters": {
+        "queue": "",
+        "start_date": "",
+        "end_date": "",
+        "min_silence": 0,
+        "search_text": "balance",
+        "contact_reason": "",
+        "sentiment": "",
+        "enriched_only": "false",
+        "page_size": 25,
+        "row_offset": 0
+      },
+      "path": "/api/analytics/query/explore_interactions",
+      "http_status": 200,
+      "content_type": "text/event-stream; charset=utf-8",
+      "elapsed_ms": 1817,
+      "sse_result_received": true,
+      "sse_error_received": false,
+      "row_count": 9,
+      "verified_values": {
+        "all_rows_contain_keyword": true,
+        "all_rows_masking_complete": true,
+        "interaction_ids": [
+          "021cd80ca7cc464b",
+          "06ff201c1fd84e1c",
+          "010d38f5ada54e0d",
+          "0317f95f3d7441c5",
+          "0091a706bc604188",
+          "05c33cbd2c514f06",
+          "05c6e20d983b4804",
+          "0188295665114e74",
+          "035edd1d09c1433e"
+        ],
+        "first_match_start_seconds": "9.19"
+      }
+    },
+    {
+      "test": "contact_reason_filter_count",
+      "query_key": "explore_count",
+      "parameters": {
+        "queue": "",
+        "start_date": "",
+        "end_date": "",
+        "min_silence": 0,
+        "search_text": "",
+        "contact_reason": "check balance",
+        "sentiment": "",
+        "enriched_only": "false"
+      },
+      "path": "/api/analytics/query/explore_count",
+      "http_status": 200,
+      "content_type": "text/event-stream; charset=utf-8",
+      "elapsed_ms": 3256,
+      "sse_result_received": true,
+      "sse_error_received": false,
+      "row_count": 1,
+      "verified_values": {
+        "total_count": "9",
+        "enriched_count": "9",
+        "masked_complete_count": "9",
+        "scope_count": "1446",
+        "scope_enriched_count": "50",
+        "latest_processed_at": "2026-10-22T23:50:50.754Z"
+      }
+    },
+    {
+      "test": "negative_sentiment_count",
+      "query_key": "explore_count",
+      "parameters": {
+        "queue": "",
+        "start_date": "",
+        "end_date": "",
+        "min_silence": 0,
+        "search_text": "",
+        "contact_reason": "",
+        "sentiment": "negative",
+        "enriched_only": "false"
+      },
+      "path": "/api/analytics/query/explore_count",
+      "http_status": 200,
+      "content_type": "text/event-stream; charset=utf-8",
+      "elapsed_ms": 2834,
+      "sse_result_received": true,
+      "sse_error_received": false,
+      "row_count": 1,
+      "verified_values": {
+        "total_count": "0",
+        "enriched_count": "0",
+        "masked_complete_count": "0",
+        "scope_count": "1446",
+        "scope_enriched_count": "50",
+        "latest_processed_at": null
+      }
+    },
+    {
+      "test": "enriched_only_count",
+      "query_key": "explore_count",
+      "parameters": {
+        "queue": "",
+        "start_date": "",
+        "end_date": "",
+        "min_silence": 0,
+        "search_text": "",
+        "contact_reason": "",
+        "sentiment": "",
+        "enriched_only": "true"
+      },
+      "path": "/api/analytics/query/explore_count",
+      "http_status": 200,
+      "content_type": "text/event-stream; charset=utf-8",
+      "elapsed_ms": 3191,
+      "sse_result_received": true,
+      "sse_error_received": false,
+      "row_count": 1,
+      "verified_values": {
+        "total_count": "50",
+        "enriched_count": "50",
+        "masked_complete_count": "50",
+        "scope_count": "1446",
+        "scope_enriched_count": "50",
+        "latest_processed_at": "2026-10-22T23:50:50.754Z"
+      }
+    },
+    {
+      "test": "overview_unobserved_2026_period",
+      "query_key": "overview_summary",
+      "parameters": {
+        "queue": "",
+        "start_date": "2026-10-01",
+        "end_date": "2026-10-25"
+      },
+      "path": "/api/analytics/query/overview_summary",
+      "http_status": 200,
+      "content_type": "text/event-stream; charset=utf-8",
+      "elapsed_ms": 2307,
+      "sse_result_received": true,
+      "sse_error_received": false,
+      "row_count": 1,
+      "verified_values": {
+        "interaction_count": "0",
+        "enriched_count": "0",
+        "sentiment_count": "0",
+        "period_start": "2026-10-01T00:00:00.000Z",
+        "period_end": "2026-10-26T00:00:00.000Z"
+      }
+    },
+    {
+      "test": "explore_unobserved_2026_period",
+      "query_key": "explore_interactions",
+      "parameters": {
+        "queue": "",
+        "start_date": "2026-10-01",
+        "end_date": "2026-10-25",
+        "min_silence": 0,
+        "search_text": "",
+        "contact_reason": "",
+        "sentiment": "",
+        "enriched_only": "false",
+        "page_size": 25,
+        "row_offset": 0
+      },
+      "path": "/api/analytics/query/explore_interactions",
+      "http_status": 200,
+      "content_type": "text/event-stream; charset=utf-8",
+      "elapsed_ms": 1267,
+      "sse_result_received": true,
+      "sse_error_received": false,
+      "row_count": 0,
+      "result_data_field_present": false,
+      "result_status": null,
+      "statement_id": null,
+      "verified_values": {
+        "empty_result_normalized_to_array": true,
+        "no_historical_calls_substituted": true
+      }
+    }
+  ],
+  "errors": [],
+  "resource_changes": "None; only GET requests and read-only analytics query POSTs.",
+  "limitations": [
+    "This verifies deployed API results and static asset delivery; browser rendering and UI interactions were not exercised.",
+    "A single permitted identity does not establish isolation for a restricted user.",
+    "Source transcripts, original audio, case persistence/sharing, labels and Genie browser behavior require separate acceptance.",
+    "Elapsed request times are observations from this run, not a performance benchmark."
+  ],
+  "resolved_observations": [
+    {
+      "initial_test_issue": "The first validation parser required result.data to be an array and rejected the successful zero-row response.",
+      "resolution": "Installed AppKit0.84 permits result.data to be omitted or null for zero rows. The final-only retry received a non-error result event and normalized it to an empty array. No production change was required."
+    }
+  ],
+  "genie_bridge_validation_file": "genie-live-validation.json",
+  "genie_bridge_outcome": "passed"
+}

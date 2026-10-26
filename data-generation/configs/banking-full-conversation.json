@@ -1,0 +1,65 @@
+{
+  "name": "banking-full-conversation-v1",
+  "seed": 119,
+  "sample_rate": 24000,
+  "personas": [
+    {
+      "id": "maya",
+      "role": "agent",
+      "language": "English",
+      "description": "A woman in her early thirties with a natural Australian English accent and a warm, slightly husky midrange speaking voice. She is chatting one to one on a support call, relaxed and attentive. Everyday conversational rhythm, soft sentence endings, understated expression, quick connected words and occasional small pauses while thinking. Friendly without sounding cheerful all the time. No announcer projection, exaggerated enunciation or advertising cadence.",
+      "reference_text": "Oh, right. Yeah, I can see why that looks confusing. Give me a second to have a look... okay, I've got it. Let's go through it together."
+    },
+    {
+      "id": "dan",
+      "role": "customer",
+      "language": "English",
+      "description": "A man in his forties with an ordinary Australian English accent, a low midrange voice and a little dry vocal texture. Casual spontaneous conversation on the phone. Slightly distracted and mildly concerned, not theatrical. Uneven natural pacing, relaxed consonants, contractions and small thinking pauses. Speaks quietly to another person rather than reading to an audience. No announcer voice or exaggerated emotion.",
+      "reference_text": "Yeah, hi. Um, I'm just looking at the app now. There are two payments here, but I'm pretty sure I only paid once. Hang on... yeah, same amount."
+    }
+  ],
+  "conversations": [
+    {
+      "id": "duplicate_card_payment_full",
+      "scenario": "Fictional end-to-end support call: greeting, duplicate card payment concern, clarification of pending versus completed transactions, practical next steps, recap and goodbye. No real customer details.",
+      "split": "validation",
+      "turns": [
+        {"persona": "maya", "text": "Hi, you've got Maya. How can I help?", "gap_seconds": 0.15},
+        {"persona": "dan", "text": "Hi, Maya. Dan here. Um, I think I've been charged twice for something. I'm looking at it now and, yeah, there are definitely two entries.", "gap_seconds": 0.22},
+        {"persona": "maya", "text": "Okay. What was the payment for?", "gap_seconds": 0.1},
+        {"persona": "dan", "text": "Groceries. Green Valley Market. It was eighty-nine dollars forty, yesterday afternoon.", "gap_seconds": 0.25},
+        {"persona": "maya", "text": "And both entries are for exactly that amount?", "gap_seconds": 0.12},
+        {"persona": "dan", "text": "Yeah. Well, hang on... one's got a little clock next to it. Does that mean anything?", "gap_seconds": 0.35},
+        {"persona": "maya", "text": "It might. If you tap that one, does it say pending anywhere?", "gap_seconds": 0.16},
+        {"persona": "dan", "text": "Just a sec, my screen's gone off.", "gap_seconds": 0.12},
+        {"persona": "maya", "text": "No rush.", "gap_seconds": 0.08},
+        {"persona": "dan", "text": "Right, got it. Yeah, pending. The other one says completed.", "gap_seconds": 1.6},
+        {"persona": "maya", "text": "Okay, that helps. It looks like the shop's original hold is still showing alongside the finished payment.", "gap_seconds": 0.18},
+        {"persona": "dan", "text": "But the money's come out twice, hasn't it? My available balance is lower than it should be.", "gap_seconds": -0.16},
+        {"persona": "maya", "text": "Your available balance can include that hold, yeah. I get why it looks like a second charge. A pending hold and a completed payment aren't quite the same thing, though.", "gap_seconds": 0.24},
+        {"persona": "dan", "text": "Oh. So I haven't actually paid them twice?", "gap_seconds": 0.32},
+        {"persona": "maya", "text": "From what you've described, there's one finished payment and one hold. I wouldn't call it a confirmed duplicate yet.", "gap_seconds": 0.18},
+        {"persona": "dan", "text": "Right. The machine did play up, actually. She asked me to tap again, and I thought the first one hadn't worked.", "gap_seconds": 0.35},
+        {"persona": "maya", "text": "Ah, okay. That would fit. Do you still have the receipt?", "gap_seconds": 0.12},
+        {"persona": "dan", "text": "Probably in the bag in the car. I can have a look later.", "gap_seconds": 0.22},
+        {"persona": "maya", "text": "Yeah, keep hold of it if you find it. It'll help if we need to check this again.", "gap_seconds": 0.1},
+        {"persona": "dan", "text": "How long do I leave it? I've got a bill due on Monday, so I'm a bit worried about the balance.", "gap_seconds": 0.3},
+        {"persona": "maya", "text": "Fair enough. Holds often clear after a few business days, but the timing can vary. I can't promise it'll be back before Monday.", "gap_seconds": 0.2},
+        {"persona": "dan", "text": "Mm. Okay. And if that pending one changes to completed?", "gap_seconds": 0.36},
+        {"persona": "maya", "text": "Then get back in touch and tell us both entries have completed. We can review it as a possible duplicate. Keep the dates, amounts and receipt handy.", "gap_seconds": 0.16},
+        {"persona": "dan", "text": "And if it just stays pending?", "gap_seconds": 0.12},
+        {"persona": "maya", "text": "Contact us if it hasn't cleared after a few business days, or sooner if it's causing a problem with an essential payment. We can check what options are available.", "gap_seconds": 0.2},
+        {"persona": "dan", "text": "Okay. So, for now, keep the receipt and watch that pending one. Don't try paying the shop again or anything.", "gap_seconds": 0.32},
+        {"persona": "maya", "text": "That's right. You've already got a completed payment showing. And if anything changes, come back to us.", "gap_seconds": 0.1},
+        {"persona": "dan", "text": "All right, that makes more sense now. Sorry, I just saw the two amounts and panicked a bit.", "gap_seconds": 0.26},
+        {"persona": "maya", "text": "No, you're fine. It's a confusing way for it to show up. Anything else you wanted to check while we're here?", "gap_seconds": 0.12},
+        {"persona": "dan", "text": "No, that's it. Thanks for explaining it, Maya.", "gap_seconds": 0.3},
+        {"persona": "maya", "text": "No worries, Dan. Take care.", "gap_seconds": 0.12},
+        {"persona": "dan", "text": "You too. Bye.", "gap_seconds": 0.14}
+      ]
+    }
+  ],
+  "conditions": [
+    {"id": "phone", "bandpass_hz": [200, 3800], "noise_snr_db": 35}
+  ]
+}

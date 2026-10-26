@@ -1,0 +1,34 @@
+# Include from databricks.yml after choosing the target profile and data-owner run_as identity.
+resources:
+  jobs:
+    label_worker:
+      name: call-insights-label-worker
+      # An analyst waits for sample results, so use interactive startup priority.
+      performance_target: PERFORMANCE_OPTIMIZED
+      tags:
+        aidevkit_project: ai-dev-kit
+      max_concurrent_runs: 4
+      run_as:
+        user_name: brian.law@databricks.com
+      queue:
+        enabled: true
+      parameters:
+        - name: run_id
+          default: ''
+      tasks:
+        - task_key: evaluate_frozen_cohort
+          notebook_task:
+            notebook_path: ../../../notebooks/harper_valley_bank/Call Insights Label Worker.py
+            base_parameters:
+              run_id: '{{job.parameters.run_id}}'
+              execution_id: '{{job.run_id}}'
+              catalog: serverless_stable_prvwqx_catalog
+              schema: call_insights
+          environment_key: label_environment
+          max_retries: 1
+          min_retry_interval_millis: 10000
+          timeout_seconds: 7200
+      environments:
+        - environment_key: label_environment
+          spec:
+            environment_version: '4'

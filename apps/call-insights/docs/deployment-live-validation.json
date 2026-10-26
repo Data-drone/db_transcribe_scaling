@@ -1,0 +1,36 @@
+{
+  "recorded_at_utc": "2026-10-25T13:59:16Z",
+  "method": "Databricks Apps get using the explicitly selected project profile and normal secure-keyring authentication.",
+  "profile": "fevm-serverless-stable-prvwqx",
+  "workspace": "https://fevm-serverless-stable-prvwqx.cloud.databricks.com",
+  "app": {
+    "name": "call-insights",
+    "url": "https://call-insights-7474659004185848.aws.databricksapps.com",
+    "state": "RUNNING",
+    "compute_state": "ACTIVE",
+    "deployment_id": "01f1d07ad7f619c3ab970119f7dfa07f",
+    "deployment_state": "SUCCEEDED",
+    "deployment_message": "App started successfully",
+    "deployment_updated_at_utc": "2026-10-25T13:50:16Z",
+    "creator": "brian.law@databricks.com",
+    "service_principal_client_id": "ccd5a96e-1fee-4fad-8518-94616c892919",
+    "user_api_scopes": ["sql", "files", "genie"]
+  },
+  "resources": {
+    "sql_warehouse_id": "8d4699c5c6d30f71",
+    "lakebase_branch": "projects/call-insights/branches/production",
+    "lakebase_database": "projects/call-insights/branches/production/databases/databricks-postgres",
+    "genie_space_id": "01f1d07837f9137889e98be6514466fa",
+    "label_worker_job_id": "17963523044750"
+  },
+  "outcome": "passed",
+  "related_live_evidence": [
+    "live-analytics-validation.json",
+    "live-investigations-validation.json",
+    "genie-live-validation.json",
+    "intelligence-live-validation.json"
+  ],
+  "limitations": [
+    "App resource status does not establish signed-in browser interaction or second-user authorization isolation."
+  ]
+}

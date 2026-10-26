@@ -1,0 +1,7 @@
+# CPU/serverless notebook environment; no model weights or local CUDA dependencies.
+mlflow==3.16.1
+databricks-sdk==0.97.0
+pandas==2.3.3
+numpy==2.2.6
+matplotlib==3.11.2
+requests==2.34.2

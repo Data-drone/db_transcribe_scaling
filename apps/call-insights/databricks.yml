@@ -1,0 +1,80 @@
+bundle:
+  name: call-insights
+
+include:
+  - resources/label-worker.yml
+
+sync:
+  paths:
+    - .
+    - ../../notebooks/harper_valley_bank
+
+variables:
+  app_name:
+    description: App name (maximum 30 lowercase letters, digits, and hyphens)
+    default: call-insights-${workspace.current_user.domain_friendly_name}
+  sql_warehouse_id:
+    description: SQL Warehouse ID
+  lakebase_branch:
+    description: Approved Lakebase branch resource name
+  lakebase_database:
+    description: Approved Lakebase database resource name
+  genie_space_id:
+    description: Reviewed Genie space ID using only curated call-data views
+  genie_space_name:
+    description: Reviewed Genie space display name
+
+resources:
+  apps:
+    app:
+      name: ${var.app_name}
+      description: 'Call evidence, shared investigations, and versioned conversation labels'
+      source_code_path: ./
+
+      # Start the app automatically on deploy.
+      lifecycle:
+        started: true
+      # Pair this scope with config/queries/*.obo.sql for per-user analytics.
+      user_api_scopes:
+        - sql
+        - files
+        - genie
+
+      # Select the warehouse. OBO users also need their own CAN_USE and UC grants.
+      resources:
+        - name: sql-warehouse
+          sql_warehouse:
+            id: ${var.sql_warehouse_id}
+            permission: CAN_USE
+        - name: postgres
+          postgres:
+            branch: ${var.lakebase_branch}
+            database: ${var.lakebase_database}
+            permission: CAN_CONNECT_AND_CREATE
+        - name: genie-space
+          genie_space:
+            space_id: ${var.genie_space_id}
+            name: ${var.genie_space_name}
+            permission: CAN_RUN
+        - name: label-worker
+          job:
+            id: ${resources.jobs.label_worker.id}
+            permission: CAN_MANAGE_RUN
+
+targets:
+  default:
+    default: true
+    mode: production
+    workspace:
+      profile: fevm-serverless-stable-prvwqx
+      host: https://fevm-serverless-stable-prvwqx.cloud.databricks.com
+      root_path: /Workspace/Users/brian.law@databricks.com/.bundle/${bundle.name}/${bundle.target}
+
+    variables:
+      # Stable production identity and user-approved resource bindings.
+      app_name: call-insights
+      sql_warehouse_id: 8d4699c5c6d30f71
+      lakebase_branch: projects/call-insights/branches/production
+      lakebase_database: projects/call-insights/branches/production/databases/databricks-postgres
+      genie_space_id: 01f1d07837f9137889e98be6514466fa
+      genie_space_name: Call Insights — source evidence

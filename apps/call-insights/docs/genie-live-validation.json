@@ -1,0 +1,248 @@
+{
+  "validated_at_utc": "2026-10-25T13:34:31.636498+00:00",
+  "workspace": "https://fevm-serverless-stable-prvwqx.cloud.databricks.com",
+  "profile": "fevm-serverless-stable-prvwqx",
+  "identity": "brian.law@databricks.com",
+  "space": {
+    "space_id": "01f1d07837f9137889e98be6514466fa",
+    "title": "Call Insights — source evidence",
+    "warehouse_id": "8d4699c5c6d30f71",
+    "source_tables": [
+      "serverless_stable_prvwqx_catalog.call_insights.genie_calls_masked",
+      "serverless_stable_prvwqx_catalog.call_insights.genie_segments_masked"
+    ]
+  },
+  "method": "Databricks CLI Chat-mode Conversation API; generated SQL plus attachment query results and final answer checked. Secure profile/keyring authentication.",
+  "outcome": "All three completed and matched SQL/data ground truth; narrative caveats remain.",
+  "resource_changes": "No resource, configuration, grant or source-data changes; only authorized test conversations were created.",
+  "tests": [
+    {
+      "test": "masked_transcript",
+      "question": "Show the ordered masked transcript for call 06ff201c1fd84e1c. Include interaction_id, segment_idx, start_seconds, end_seconds, speaker_role, and the exact masked transcript wording. Use source transcript evidence only.",
+      "conversation_id": "01f1d078679b1b0a9c6de42075fc9150",
+      "message_id": "01f1d07867ac13b5b81096327da007be",
+      "attachment_id": "01f1d0786b3a14078ea228a1c63aee7e",
+      "statement_id": "01f1d078-6b43-1853-8fae-15eae3b8ff86",
+      "message_status": "COMPLETED",
+      "query_status": "SUCCEEDED",
+      "generated_sql": "SELECT `interaction_id`, `segment_idx`, `start_seconds`, `end_seconds`, `speaker_role`, `text_masked`\nFROM `serverless_stable_prvwqx_catalog`.`call_insights`.`genie_segments_masked`\nWHERE `interaction_id` = '06ff201c1fd84e1c'\nORDER BY `segment_idx`",
+      "columns": [
+        "interaction_id",
+        "segment_idx",
+        "start_seconds",
+        "end_seconds",
+        "speaker_role",
+        "text_masked"
+      ],
+      "rows": [
+        [
+          "06ff201c1fd84e1c",
+          "1",
+          "3.75",
+          "9.35",
+          "agent",
+          "Hello, this is Harper Valley National Bank. My name is [MASKED]. How can I help you today?"
+        ],
+        [
+          "06ff201c1fd84e1c",
+          "2",
+          "11.93",
+          "17.13",
+          "customer",
+          "Hi, my name is [MASKED]. I need to check my account balance."
+        ],
+        [
+          "06ff201c1fd84e1c",
+          "3",
+          "18.81",
+          "21.61",
+          "agent",
+          "Okay. Which account would you like to check?"
+        ],
+        [
+          "06ff201c1fd84e1c",
+          "4",
+          "25.83",
+          "27.59",
+          "customer",
+          "I see his account."
+        ],
+        [
+          "06ff201c1fd84e1c",
+          "5",
+          "28.95",
+          "38.79",
+          "agent",
+          "Okay. Your savings account balance is fifty two dollars. Is there anything else I can help you with?"
+        ],
+        [
+          "06ff201c1fd84e1c",
+          "6",
+          "41.89",
+          "43.81",
+          "customer",
+          "Nope, that's gonna be it."
+        ],
+        [
+          "06ff201c1fd84e1c",
+          "7",
+          "44.25",
+          "49.69",
+          "agent",
+          "All right. Thank you thank you for calling. Have a great day."
+        ],
+        [
+          "06ff201c1fd84e1c",
+          "8",
+          "44.39",
+          "45.67",
+          "customer",
+          "Thank you."
+        ]
+      ],
+      "checks": {
+        "expected_turn_count": 8,
+        "ordered_turns_and_start_times_match_ground_truth": true,
+        "literal_quotes_match_returned_masked_text": 8,
+        "roles_and_start_end_timestamps_match_returned_rows": 8,
+        "curated_segment_view_only": true,
+        "raw_fallback_or_rewritten_quote_detected": false
+      },
+      "narrative_summary": "Answer shows all eight ordered masked source turns verbatim. SQL carries the interaction ID and original timestamps needed for app source links.",
+      "narrative_gaps": [
+        "Does not explicitly identify machine transcription or say original audio was not verified.",
+        "The phrase \"Examples continue in order\" suggests sampling although all eight rows are shown."
+      ]
+    },
+    {
+      "test": "payments_coverage",
+      "question": "How many recorded calls and completely masked calls are available in the Payments queue?",
+      "conversation_id": "01f1d0786871164c93d16cc5bfbbe2ab",
+      "message_id": "01f1d078687c1c4eb6dba21b2709e80b",
+      "attachment_id": "01f1d0786ad31b45a8f94aaa7aa0c9ca",
+      "statement_id": "01f1d078-6ade-1b68-8564-672c7f0b767b",
+      "message_status": "COMPLETED",
+      "query_status": "SUCCEEDED",
+      "generated_sql": "SELECT `queue`, COUNT(*) AS `recorded_calls`, COUNT_IF(`masking_state` = 'complete') AS `completely_masked_calls` FROM `serverless_stable_prvwqx_catalog`.`call_insights`.`genie_calls_masked` WHERE `queue` = 'Payments' GROUP BY `queue`",
+      "columns": [
+        "queue",
+        "recorded_calls",
+        "completely_masked_calls"
+      ],
+      "rows": [
+        [
+          "Payments",
+          "350",
+          "11"
+        ]
+      ],
+      "checks": {
+        "recorded_calls": 350,
+        "completely_masked_calls": 11,
+        "not_completely_masked_calls": 339,
+        "ground_truth_match": true,
+        "call_grain_without_segment_join_fanout": true,
+        "population_and_transcript_coverage_distinguished": true
+      },
+      "answer": "In the **Payments** queue, there are **350** recorded calls and **11** completely masked calls. Based on the available result for queue **Payments**, completely masked calls represent a small share of the **350** recorded calls.",
+      "narrative_gaps": [
+        "Omits the historical recording period.",
+        "Does not explicitly state that the remaining 339 calls lack completely masked transcripts."
+      ]
+    },
+    {
+      "test": "sentiment_denominator",
+      "question": "Does the annotated sample contain any calls with negative closing sentiment, and how many calls were annotated?",
+      "conversation_id": "01f1d078693e179ca73d865106d65648",
+      "message_id": "01f1d07869491067bdfe750287c791b2",
+      "attachment_id": "01f1d0786df31c09a3110afcbf3b8396",
+      "statement_id": "01f1d078-6dfe-116c-a983-cf76b8bb22f6",
+      "message_status": "COMPLETED",
+      "query_status": "SUCCEEDED",
+      "generated_sql": "SELECT CASE WHEN SUM(CASE WHEN `is_enriched` = TRUE AND `ai_sentiment_end` = 'negative' THEN 1 ELSE 0 END) > 0 THEN 'yes' ELSE 'no' END AS `has_negative_closing_sentiment`, SUM(CASE WHEN `is_enriched` = TRUE AND `ai_sentiment_end` = 'negative' THEN 1 ELSE 0 END) AS `negative_closing_annotated_calls`, SUM(CASE WHEN `is_enriched` = TRUE THEN 1 ELSE 0 END) AS `annotated_calls_checked` FROM `serverless_stable_prvwqx_catalog`.`call_insights`.`genie_calls_masked`",
+      "columns": [
+        "has_negative_closing_sentiment",
+        "negative_closing_annotated_calls",
+        "annotated_calls_checked"
+      ],
+      "rows": [
+        [
+          "no",
+          "0",
+          "50"
+        ]
+      ],
+      "checks": {
+        "annotated_calls": 50,
+        "negative_closings": 0,
+        "ground_truth_match": true,
+        "denominator_scoped_to_is_enriched_true": true,
+        "answer_scoped_to_annotated_sample": true
+      },
+      "answer": "**No**—the annotated sample contains **0** calls with negative closing sentiment. The query checked **50** annotated calls in total, so across the annotated sample reviewed here, none ended with negative sentiment.",
+      "narrative_gaps": [
+        "Omits the historical recording period.",
+        "Does not explicitly say unannotated calls remain unknown, although its conclusion is limited to the annotated sample."
+      ]
+    }
+  ],
+  "limitations": [
+    "This is three representative conversation checks, not a statistically meaningful accuracy or optimization score.",
+    "The source evidence is a stored masked machine transcript; original audio and ASR accuracy were not verified.",
+    "Generated SQL uses only the approved curated views. This single permitted identity does not establish authorization isolation.",
+    "Deployed browser rendering, source/timestamp navigation and restricted-identity behavior require separate acceptance.",
+    "Aggregate answers omit historical recording dates despite configured guidance; transcript and coverage caveats could be clearer."
+  ],
+  "deployed_app_bridge": {
+    "validated_at_utc": "2026-10-25T13:54:04.226117+00:00",
+    "app_url": "https://call-insights-7474659004185848.aws.databricksapps.com",
+    "route": "POST /api/genie/default/messages",
+    "question": "How many recorded calls and completely masked calls are available in Payments?",
+    "profile": "fevm-serverless-stable-prvwqx",
+    "authentication": "Selected-profile bearer token held in process memory; real Apps proxy identity; no forwarded headers sent.",
+    "http_status": 200,
+    "content_type": "text/event-stream; charset=utf-8",
+    "elapsed_ms": 13927,
+    "transport_completed_at_eof": true,
+    "sse_event_types": [
+      "message_start",
+      "status",
+      "status",
+      "status",
+      "status",
+      "status",
+      "message_result",
+      "query_result"
+    ],
+    "sse_errors": [],
+    "message_status": "COMPLETED",
+    "space_id": "01f1d07837f9137889e98be6514466fa",
+    "conversation_id": "01f1d07b829c12fd9ea5c6e59ad09711",
+    "message_id": "01f1d07b82b01168848347b1924ea7f8",
+    "answer": "In **Payments**, there are **350** recorded calls and **11** completely masked calls. Based on the single returned result for queue **Payments**, completely masked calls represent a small portion of the **350** recorded calls.",
+    "queries": [
+      {
+        "attachment_id": "01f1d07b84e91f5da657e813e35d8078",
+        "statement_id": "01f1d07b-84f5-1864-8a93-6c93bded0cc2",
+        "generated_sql": "SELECT COUNT(*) AS recorded_calls, COUNT_IF(`masking_state` = 'complete') AS completely_masked_calls FROM `serverless_stable_prvwqx_catalog`.`call_insights`.`genie_calls_masked` WHERE `queue` = 'Payments'",
+        "query_state": "SUCCEEDED",
+        "columns": [
+          "recorded_calls",
+          "completely_masked_calls"
+        ],
+        "rows": [
+          [
+            "350",
+            "11"
+          ]
+        ],
+        "result_matches_payments_350_11": true
+      }
+    ],
+    "outcome": "passed",
+    "resource_changes": "No resource/configuration/grant changes; one authorized test conversation created.",
+    "limitations": [
+      "This verifies the deployed AppKit Genie OBO bridge for one permitted identity, not browser rendering or restricted-user isolation."
+    ]
+  }
+}

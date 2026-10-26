@@ -1,0 +1,42 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "transcription-audio-data-gen"
+version = "0.1.0"
+description = "Persona speech and controlled interference fixtures for transcription evaluation"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "numpy>=2.2,<3",
+  "scipy>=1.15,<2",
+  "soundfile>=0.13,<0.14",
+]
+
+[project.optional-dependencies]
+tts = [
+  "qwen-tts==0.1.1",
+  "torch==2.7.1",
+  "torchaudio==2.7.1",
+  "huggingface-hub>=0.34,<1",
+]
+tracking = ["mlflow==3.16.1"]
+
+[dependency-groups]
+dev = ["pytest>=8.3,<10", "ruff>=0.12,<1"]
+
+[project.scripts]
+audio-data-gen = "audio_data_gen.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["audio_data_gen"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]

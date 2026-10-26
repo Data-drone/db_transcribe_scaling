@@ -1,0 +1,495 @@
+<div id="cci">
+<style>
+#cci {
+  color-scheme: light dark;
+  --bg: light-dark(#ffffff, #1c1c1c);
+  --surface: light-dark(#f5f5f3, #252525);
+  --line: light-dark(#d2d2cd, #3e3e3e);
+  --text: light-dark(#1f1f1f, #e8e8e6);
+  --muted: light-dark(#5c5c57, #a9a9a4);
+  --ph: light-dark(#e4e4e0, #343434);
+  --agent: light-dark(#4f72ad, #86a6dc);
+  --cust: light-dark(#7d7d77, #a3a39d);
+  --hl: light-dark(#fbefc0, #4a4120);
+  --btn: light-dark(#1f1f1f, #e8e8e6);
+  --btn-text: light-dark(#ffffff, #1c1c1c);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text);
+}
+#cci * { box-sizing: border-box; }
+#cci .cci-switch { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+#cci .cci-switch button {
+  font: inherit; color: var(--muted); background: transparent;
+  border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; cursor: pointer;
+}
+#cci .cci-switch button[aria-selected="true"] { color: var(--btn-text); background: var(--btn); border-color: var(--btn); }
+#cci .cci-app { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+#cci .cci-top {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 16px;
+  padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--surface);
+}
+#cci .cci-brand { font-weight: 500; }
+#cci .cci-nav { display: flex; flex-wrap: wrap; gap: 14px; color: var(--muted); }
+#cci .cci-nav span[aria-current="page"] { color: var(--text); font-weight: 500; text-decoration: underline; text-underline-offset: 4px; }
+#cci .cci-screen { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+#cci .cci-screen[hidden] { display: none; }
+#cci h2, #cci h3 { margin: 0; font-weight: 500; }
+#cci h2 { font-size: 17px; }
+#cci h3 { font-size: 13px; }
+#cci p { margin: 0; }
+#cci .cci-muted { color: var(--muted); }
+#cci .cci-small { font-size: 12px; }
+#cci .cci-column { display: flex; flex-direction: column; gap: 4px; }
+#cci .cci-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+#cci .cci-between { justify-content: space-between; }
+#cci .cci-box { border: 1px solid var(--line); border-radius: 6px; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: var(--bg); }
+#cci .cci-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+#cci .cci-kpi { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; }
+#cci .cci-kpi b { display: block; font-size: 18px; font-weight: 500; margin: 2px 0; }
+#cci .cci-cols { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 16px; }
+#cci .cci-cols-even { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+@media (max-width: 640px) { #cci .cci-cols, #cci .cci-cols-even { grid-template-columns: minmax(0, 1fr); } }
+#cci button.cci-btn, #cci .cci-btn {
+  font: inherit; font-size: 12px; color: var(--text); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 5px; padding: 5px 10px; cursor: pointer;
+}
+#cci button.cci-primary { background: var(--btn); color: var(--btn-text); border-color: var(--btn); }
+#cci button.cci-btn[aria-pressed="true"] { background: var(--btn); color: var(--btn-text); border-color: var(--btn); }
+#cci .cci-select { border: 1px solid var(--line); border-radius: 5px; padding: 4px 10px; font-size: 12px; color: var(--muted); }
+#cci .cci-input, #cci textarea {
+  font: inherit; color: var(--text); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 5px; padding: 7px 10px; width: 100%;
+}
+#cci textarea { resize: vertical; min-height: 72px; }
+#cci label { display: flex; flex-direction: column; gap: 4px; color: var(--muted); font-size: 12px; }
+#cci .cci-ask { display: flex; gap: 8px; }
+#cci .cci-ask .cci-input { flex: 1; }
+#cci .cci-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+#cci .cci-list > li { padding: 9px 0; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 4px; }
+#cci .cci-list > li:first-child { border-top: 0; padding-top: 0; }
+#cci .cci-link {
+  font: inherit; color: var(--text); background: none; border: 0; padding: 0; cursor: pointer;
+  text-align: left; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line);
+}
+#cci .cci-link:hover { text-decoration-color: var(--text); }
+#cci .cci-bars { display: flex; flex-direction: column; gap: 7px; }
+#cci .cci-bar { display: grid; grid-template-columns: minmax(90px, 140px) minmax(0, 1fr) 40px; gap: 8px; align-items: center; }
+#cci .cci-bar i { display: block; height: 10px; background: var(--ph); border-radius: 2px; position: relative; overflow: hidden; }
+#cci .cci-bar i::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--w); background: var(--cust); }
+#cci .cci-bar span:last-child { text-align: right; color: var(--muted); }
+#cci .cci-chart {
+  height: 120px; border: 1px dashed var(--line); border-radius: 6px; background: var(--surface);
+  display: flex; align-items: center; justify-content: center; color: var(--muted);
+}
+#cci .cci-tag { border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; font-size: 12px; color: var(--muted); }
+#cci .cci-why { background: var(--hl); border-radius: 5px; padding: 6px 10px; font-size: 12px; }
+#cci .cci-crumb { font-size: 12px; color: var(--muted); }
+#cci .cci-player { display: flex; flex-direction: column; gap: 6px; }
+#cci .cci-lane { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 8px; align-items: center; font-size: 12px; color: var(--muted); }
+#cci .cci-track { position: relative; height: 14px; background: var(--surface); border-radius: 3px; }
+#cci .cci-track s { position: absolute; top: 0; bottom: 0; text-decoration: none; border-radius: 2px; }
+#cci .cci-agent s { background: var(--agent); }
+#cci .cci-cust s { background: var(--cust); }
+#cci .cci-track s.cci-hold { background: transparent; border: 1px dashed var(--muted); }
+#cci .cci-marks .cci-track { background: transparent; height: 18px; }
+#cci .cci-marks s {
+  width: 18px; height: 18px; margin-left: -9px; border-radius: 50%; background: var(--bg);
+  border: 1px solid var(--text); color: var(--text); font-size: 11px; display: flex; align-items: center; justify-content: center;
+}
+#cci .cci-legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); }
+#cci .cci-sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+#cci .cci-turns { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+#cci .cci-turns li { display: grid; grid-template-columns: 44px 70px minmax(0, 1fr); gap: 8px; padding: 6px 8px; border-radius: 4px; }
+#cci .cci-turns li.cci-on { background: var(--hl); }
+#cci .cci-turns .cci-t { color: var(--muted); font-variant-numeric: tabular-nums; }
+#cci .cci-who-a { color: var(--agent); font-weight: 500; }
+#cci .cci-who-c { color: var(--cust); font-weight: 500; }
+#cci .cci-event { color: var(--muted); font-style: italic; }
+#cci dl { margin: 0; display: grid; grid-template-columns: auto auto; gap: 4px 12px; }
+#cci dt { color: var(--muted); }
+#cci dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+#cci .cci-quote { border-left: 0; padding: 6px 10px; background: var(--surface); border-radius: 4px; }
+#cci .cci-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+</style>
+
+<p class="cci-sr">Low-fidelity wireframes of four screens in a call analytics app: pulse overview, theme detail, call detail, and label builder. Buttons inside each screen move between screens along the user flow.</p>
+
+<div class="cci-switch" role="tablist" aria-label="Wireframe screens">
+  <button role="tab" id="cci-tab-overview" aria-controls="cci-overview" aria-selected="true" data-goto="overview">1. Pulse overview</button>
+  <button role="tab" id="cci-tab-theme" aria-controls="cci-theme" aria-selected="false" tabindex="-1" data-goto="theme">2. Theme detail</button>
+  <button role="tab" id="cci-tab-call" aria-controls="cci-call" aria-selected="false" tabindex="-1" data-goto="call">3. Call detail</button>
+  <button role="tab" id="cci-tab-label" aria-controls="cci-label" aria-selected="false" tabindex="-1" data-goto="label">4. Label builder</button>
+</div>
+
+<div class="cci-app">
+  <div class="cci-top">
+    <span class="cci-brand">Call Insights</span>
+    <div class="cci-nav" aria-label="App sections">
+      <span data-nav="overview" aria-current="page">Overview</span>
+      <span data-nav="explore">Explore</span>
+      <span data-nav="ask">Ask</span>
+      <span data-nav="labels">Labels</span>
+      <span data-nav="cases">Cases</span>
+    </div>
+  </div>
+
+  <section class="cci-screen" id="cci-overview" role="tabpanel" aria-labelledby="cci-tab-overview">
+    <div class="cci-row cci-between">
+      <h2>Overview</h2>
+      <div class="cci-row">
+        <span class="cci-select">Last 7 days ▾</span>
+        <span class="cci-select">All queues ▾</span>
+      </div>
+    </div>
+
+    <div class="cci-ask">
+      <input class="cci-input" type="text" aria-label="Ask a question about your calls" placeholder="Why are billing calls taking longer this week?">
+      <button class="cci-btn cci-primary" data-goto="theme">Ask</button>
+    </div>
+
+    <div class="cci-kpis">
+      <div class="cci-kpi"><span class="cci-muted cci-small">Calls</span><b>12,480</b><span class="cci-small cci-muted">+6% vs last week</span></div>
+      <div class="cci-kpi"><span class="cci-muted cci-small">Avg handle time</span><b>6m 42s</b><span class="cci-small cci-muted">+38s vs last week</span></div>
+      <div class="cci-kpi"><span class="cci-muted cci-small">Negative sentiment</span><b>18%</b><span class="cci-small cci-muted">+3 pts</span></div>
+      <div class="cci-kpi"><span class="cci-muted cci-small">Repeat contact in 48h</span><b>11%</b><span class="cci-small cci-muted">+2 pts</span></div>
+    </div>
+
+    <div class="cci-cols">
+      <div class="cci-box">
+        <h3>What's changed</h3>
+        <ul class="cci-list">
+          <li>
+            <button class="cci-link" data-goto="theme">Billing dispute calls up 40% week over week</button>
+            <span class="cci-small cci-muted">2,980 calls · handle time 8m 15s · mostly duplicate charges</span>
+          </li>
+          <li>
+            <button class="cci-link" data-goto="theme">Password reset handle time up 1m 10s</button>
+            <span class="cci-small cci-muted">1,140 calls · longer silences during verification</span>
+          </li>
+          <li>
+            <button class="cci-link" data-goto="label">“Customer repeats account number” up 22%</button>
+            <span class="cci-small cci-muted">Tracked label · mostly after transfers</span>
+          </li>
+        </ul>
+      </div>
+      <div class="cci-box">
+        <h3>Top contact reasons</h3>
+        <div class="cci-bars">
+          <div class="cci-bar"><span>Billing</span><i style="--w:96%"></i><span>24%</span></div>
+          <div class="cci-bar"><span>Tech support</span><i style="--w:76%"></i><span>19%</span></div>
+          <div class="cci-bar"><span>Account changes</span><i style="--w:60%"></i><span>15%</span></div>
+          <div class="cci-bar"><span>Delivery</span><i style="--w:48%"></i><span>12%</span></div>
+          <div class="cci-bar"><span>Cancellation</span><i style="--w:36%"></i><span>9%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cci-chart">Volume and sentiment trend by day</div>
+  </section>
+
+  <section class="cci-screen" id="cci-theme" role="tabpanel" aria-labelledby="cci-tab-theme" hidden>
+    <div class="cci-column">
+      <div class="cci-crumb"><button class="cci-link" data-goto="overview">Overview</button> / Theme</div>
+    </div>
+    <div class="cci-row cci-between">
+      <h2>Billing dispute</h2>
+      <div class="cci-row">
+        <button class="cci-btn" data-goto="label">Refine as label</button>
+        <button class="cci-btn">Save to case</button>
+      </div>
+    </div>
+
+    <div class="cci-kpis">
+      <div class="cci-kpi"><span class="cci-muted cci-small">Calls</span><b>2,980</b><span class="cci-small cci-muted">+40% week over week</span></div>
+      <div class="cci-kpi"><span class="cci-muted cci-small">Avg handle time</span><b>8m 15s</b><span class="cci-small cci-muted">1m 33s above overall</span></div>
+      <div class="cci-kpi"><span class="cci-muted cci-small">Repeat contact in 48h</span><b>19%</b><span class="cci-small cci-muted">8 pts above overall</span></div>
+      <div class="cci-kpi"><span class="cci-muted cci-small">Extra agent hours</span><b>410 / wk</b><span class="cci-small cci-muted">estimated from handle time</span></div>
+    </div>
+
+    <div class="cci-box">
+      <h3>Summary</h3>
+      <p>Customers are disputing a duplicate October charge, which started after the billing system change on 14 Oct. Most ask for a refund and are transferred to the billing team, often after a hold.</p>
+    </div>
+
+    <div class="cci-cols cci-cols-even">
+      <div class="cci-box">
+        <h3>Drivers within this theme</h3>
+        <div class="cci-bars">
+          <div class="cci-bar"><span>Duplicate charge</span><i style="--w:92%"></i><span>46%</span></div>
+          <div class="cci-bar"><span>Late fee</span><i style="--w:42%"></i><span>21%</span></div>
+          <div class="cci-bar"><span>Promo not applied</span><i style="--w:36%"></i><span>18%</span></div>
+          <div class="cci-bar"><span>Other</span><i style="--w:30%"></i><span>15%</span></div>
+        </div>
+      </div>
+      <div class="cci-box">
+        <h3>By queue</h3>
+        <dl>
+          <dt>Billing</dt><dd>1,940 calls · 7m 50s</dd>
+          <dt>General</dt><dd>720 calls · 9m 05s</dd>
+          <dt>Retention</dt><dd>320 calls · 8m 40s</dd>
+        </dl>
+        <div class="cci-chart" style="height:64px">Daily trend</div>
+      </div>
+    </div>
+
+    <div class="cci-box">
+      <div class="cci-row cci-between">
+        <h3>Representative calls</h3>
+        <span class="cci-select">Sort: most typical ▾</span>
+      </div>
+      <ul class="cci-list">
+        <li>
+          <div class="cci-row cci-between">
+            <button class="cci-link" data-goto="call">C-20481 · 21 Oct · 9m 12s</button>
+            <span class="cci-tag">Negative</span>
+          </div>
+          <span class="cci-small cci-muted">“That's the second time I've had to explain this. I just want the duplicate charge refunded.”</span>
+        </li>
+        <li>
+          <div class="cci-row cci-between">
+            <button class="cci-link" data-goto="call">C-20377 · 20 Oct · 7m 48s</button>
+            <span class="cci-tag">Negative</span>
+          </div>
+          <span class="cci-small cci-muted">“I can see two payments of $89 on my card from the 3rd.”</span>
+        </li>
+        <li>
+          <div class="cci-row cci-between">
+            <button class="cci-link" data-goto="call">C-20215 · 20 Oct · 5m 31s</button>
+            <span class="cci-tag">Neutral</span>
+          </div>
+          <span class="cci-small cci-muted">“Can you just reverse the second charge while I'm on the line?”</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="cci-screen" id="cci-call" role="tabpanel" aria-labelledby="cci-tab-call" hidden>
+    <div class="cci-crumb"><button class="cci-link" data-goto="overview">Overview</button> / <button class="cci-link" data-goto="theme">Billing dispute</button> / Call</div>
+    <div class="cci-row cci-between">
+      <div class="cci-column">
+        <h2>Call C-20481</h2>
+        <span class="cci-small cci-muted">21 Oct 2026 · 9m 12s · Billing queue · Agent J. Patel</span>
+      </div>
+      <div class="cci-row">
+        <button class="cci-btn">Save clip</button>
+        <button class="cci-btn">Find similar</button>
+        <button class="cci-btn" data-goto="label">Flag wrong label</button>
+      </div>
+    </div>
+
+    <div class="cci-why">You're here because this call matched <strong>Billing dispute</strong>. Jumped to 02:14.</div>
+
+    <div class="cci-box cci-player">
+      <div class="cci-row">
+        <button class="cci-btn cci-primary" aria-label="Play">▶ Play</button>
+        <span class="cci-small cci-muted">02:14 / 09:12</span>
+        <span class="cci-select">1.0x ▾</span>
+      </div>
+      <div class="cci-lane cci-agent" role="img" aria-label="Agent speaking segments">
+        <span>Agent</span>
+        <div class="cci-track">
+          <s style="left:0%;width:5%"></s><s style="left:6%;width:3%"></s><s style="left:19%;width:5%"></s>
+          <s style="left:31%;width:13%"></s><s style="left:55%;width:6.6%"></s><s class="cci-hold" style="left:61.6%;width:8.7%"></s>
+          <s style="left:70.3%;width:10%"></s><s style="left:86%;width:6%"></s>
+        </div>
+      </div>
+      <div class="cci-lane cci-cust" role="img" aria-label="Customer speaking segments">
+        <span>Customer</span>
+        <div class="cci-track">
+          <s style="left:5.5%;width:0.8%"></s><s style="left:9.5%;width:8.5%"></s><s style="left:24%;width:6.5%"></s>
+          <s style="left:44.5%;width:10%"></s><s class="cci-hold" style="left:61.6%;width:8.7%"></s>
+          <s style="left:80%;width:6.5%"></s><s style="left:92%;width:8%"></s>
+        </div>
+      </div>
+      <div class="cci-lane cci-marks" role="img" aria-label="Key moments 1 to 4 on the call timeline">
+        <span>Moments</span>
+        <div class="cci-track">
+          <s style="left:5.8%">1</s><s style="left:24.3%">2</s><s style="left:61.6%">3</s><s style="left:86%">4</s>
+        </div>
+      </div>
+      <div class="cci-legend">
+        <span><span class="cci-sw" style="background:var(--agent)"></span>Agent</span>
+        <span><span class="cci-sw" style="background:var(--cust)"></span>Customer</span>
+        <span><span class="cci-sw" style="border:1px dashed var(--muted)"></span>Hold or silence</span>
+      </div>
+    </div>
+
+    <div class="cci-cols">
+      <div class="cci-box">
+        <div class="cci-row cci-between">
+          <h3>Transcript</h3>
+          <input class="cci-input" style="width:180px" type="search" aria-label="Search transcript" placeholder="refund">
+        </div>
+        <ul class="cci-turns">
+          <li><span class="cci-t">00:04</span><span class="cci-who-a">Agent</span><span>Thanks for calling, this is Jay. Can I get your account number?</span></li>
+          <li><span class="cci-t">00:11</span><span class="cci-who-c">Customer</span><span>Sure, it's 4471 2208.</span></li>
+          <li><span class="cci-t">00:32</span><span class="cci-who-a">Agent</span><span>Thanks, you're verified. How can I help today?</span></li>
+          <li><span class="cci-t">00:38</span><span class="cci-who-c">Customer</span><span>I've been charged twice for October, and I already called about this last week.</span></li>
+          <li class="cci-on"><span class="cci-t">02:14</span><span class="cci-who-c">Customer</span><span>That's the second time I've had to explain this. I just want the duplicate charge refunded.</span></li>
+          <li><span class="cci-t">02:31</span><span class="cci-who-a">Agent</span><span>I'm sorry about that. I can see two charges of $89 on the 3rd. Let me check what I can do.</span></li>
+          <li><span class="cci-t">05:40</span><span class="cci-who-a">Agent</span><span>I'll pop you on a short hold while I check with billing. <span class="cci-event">Hold 48s</span></span></li>
+          <li><span class="cci-t">07:55</span><span class="cci-who-a">Agent</span><span>I'm transferring you to our billing team, who can process the refund.</span></li>
+          <li><span class="cci-t">08:02</span><span class="cci-who-c">Customer</span><span>Will I have to give my account number again?</span></li>
+        </ul>
+      </div>
+
+      <div class="cci-column" style="display:flex;flex-direction:column;gap:12px">
+        <div class="cci-box">
+          <h3>Summary</h3>
+          <p>Repeat caller disputing a duplicate $89 October charge. Agent confirmed both charges, placed the customer on hold, then transferred to billing for the refund. Not resolved on this call.</p>
+          <div class="cci-row">
+            <span class="cci-tag">Billing dispute</span>
+            <span class="cci-tag">Duplicate charge</span>
+            <span class="cci-tag">Repeat contact</span>
+            <span class="cci-tag">Transferred</span>
+          </div>
+        </div>
+        <div class="cci-box">
+          <h3>Key moments</h3>
+          <ol class="cci-list" style="padding-left:0">
+            <li><button class="cci-link">1 · 00:32 Identity verified</button></li>
+            <li><button class="cci-link">2 · 02:14 Customer says it's a repeat call</button></li>
+            <li><button class="cci-link">3 · 05:40 Hold, 48s</button></li>
+            <li><button class="cci-link">4 · 07:55 Transfer to billing</button></li>
+          </ol>
+        </div>
+        <div class="cci-box">
+          <h3>Conversation metrics</h3>
+          <dl>
+            <dt>Talk ratio, agent / customer</dt><dd>58% / 42%</dd>
+            <dt>Longest silence</dt><dd>48s</dd>
+            <dt>Overtalk</dt><dd>3 times</dd>
+            <dt>Transfers</dt><dd>1</dd>
+            <dt>Sentiment</dt><dd>Negative → neutral</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cci-screen" id="cci-label" role="tabpanel" aria-labelledby="cci-tab-label" hidden>
+    <div class="cci-row cci-between">
+      <h2>Label builder</h2>
+      <button class="cci-btn">Track over time</button>
+    </div>
+
+    <div class="cci-cols cci-cols-even">
+      <div class="cci-box">
+        <label>Label name
+          <input class="cci-input" type="text" value="Customer repeats account number">
+        </label>
+        <label>Describe what to look for
+          <textarea>The customer is asked for their account number or identity details more than once in the same call, for example after a transfer.</textarea>
+        </label>
+        <div class="cci-row">
+          <span class="cci-select">Last 30 days ▾</span>
+          <span class="cci-select">All queues ▾</span>
+        </div>
+        <div class="cci-row">
+          <button class="cci-btn">Test on 20 calls</button>
+          <button class="cci-btn cci-primary">Run on all calls</button>
+        </div>
+      </div>
+
+      <div class="cci-box">
+        <h3>Results</h3>
+        <div class="cci-kpis">
+          <div class="cci-kpi"><span class="cci-muted cci-small">Calls matched</span><b>14%</b><span class="cci-small cci-muted">6,920 of 49,400</span></div>
+          <div class="cci-kpi"><span class="cci-muted cci-small">Matches after a transfer</span><b>71%</b><span class="cci-small cci-muted">of matched calls</span></div>
+        </div>
+        <div class="cci-bars">
+          <div class="cci-bar"><span>Billing</span><i style="--w:88%"></i><span>22%</span></div>
+          <div class="cci-bar"><span>Tech support</span><i style="--w:60%"></i><span>15%</span></div>
+          <div class="cci-bar"><span>Accounts</span><i style="--w:36%"></i><span>9%</span></div>
+        </div>
+        <span class="cci-small cci-muted">Reviewers agreed with 18 of 20 checked matches</span>
+      </div>
+    </div>
+
+    <div class="cci-box">
+      <h3>Example matches</h3>
+      <ul class="cci-list">
+        <li>
+          <div class="cci-row cci-between">
+            <button class="cci-link" data-goto="call">C-20481 · Billing · 08:02</button>
+            <div class="cci-row" role="group" aria-label="Is C-20481 a correct match?">
+              <span class="cci-small cci-muted">Correct?</span>
+              <button class="cci-btn" aria-pressed="true">Yes</button>
+              <button class="cci-btn" aria-pressed="false">No</button>
+            </div>
+          </div>
+          <div class="cci-quote cci-small">“Will I have to give my account number again?”</div>
+        </li>
+        <li>
+          <div class="cci-row cci-between">
+            <button class="cci-link" data-goto="call">C-19877 · Tech support · 03:45</button>
+            <div class="cci-row" role="group" aria-label="Is C-19877 a correct match?">
+              <span class="cci-small cci-muted">Correct?</span>
+              <button class="cci-btn" aria-pressed="false">Yes</button>
+              <button class="cci-btn" aria-pressed="false">No</button>
+            </div>
+          </div>
+          <div class="cci-quote cci-small">“I gave all of this to the last person already.”</div>
+        </li>
+        <li>
+          <div class="cci-row cci-between">
+            <button class="cci-link" data-goto="call">C-20112 · Accounts · 01:20</button>
+            <div class="cci-row" role="group" aria-label="Is C-20112 a correct match?">
+              <span class="cci-small cci-muted">Correct?</span>
+              <button class="cci-btn" aria-pressed="false">Yes</button>
+              <button class="cci-btn" aria-pressed="false">No</button>
+            </div>
+          </div>
+          <div class="cci-quote cci-small">“Sorry, do you need the account number again for this part?”</div>
+        </li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  var root = document.getElementById('cci');
+  var tabs = root.querySelectorAll('[role="tab"]');
+  var panels = root.querySelectorAll('[role="tabpanel"]');
+  var navFor = { overview: 'overview', theme: 'overview', call: 'overview', label: 'labels' };
+  var order = ['overview', 'theme', 'call', 'label'];
+
+  function show(id, focusTab) {
+    tabs.forEach(function (t) {
+      var on = t.dataset.goto === id;
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+      t.tabIndex = on ? 0 : -1;
+      if (on && focusTab) t.focus();
+    });
+    panels.forEach(function (p) { p.hidden = p.id !== 'cci-' + id; });
+    root.querySelectorAll('[data-nav]').forEach(function (n) {
+      if (n.dataset.nav === navFor[id]) n.setAttribute('aria-current', 'page');
+      else n.removeAttribute('aria-current');
+    });
+  }
+
+  root.addEventListener('click', function (e) {
+    var go = e.target.closest('[data-goto]');
+    if (go) { show(go.dataset.goto, false); return; }
+    var pressed = e.target.closest('[aria-pressed]');
+    if (pressed) {
+      var group = pressed.closest('[role="group"]');
+      group.querySelectorAll('[aria-pressed]').forEach(function (b) {
+        b.setAttribute('aria-pressed', b === pressed ? 'true' : 'false');
+      });
+    }
+  });
+
+  root.querySelector('[role="tablist"]').addEventListener('keydown', function (e) {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    var current = root.querySelector('[role="tab"][aria-selected="true"]').dataset.goto;
+    var i = order.indexOf(current) + (e.key === 'ArrowRight' ? 1 : -1);
+    show(order[(i + order.length) % order.length], true);
+    e.preventDefault();
+  });
+})();
+</script>
+</div>

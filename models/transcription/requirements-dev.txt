@@ -1,0 +1,5 @@
+# Lightweight checks use mocked inference; no CUDA or model weights required.
+-r requirements-client.txt
+mlflow==3.16.1
+numpy==2.2.6
+pandas==2.3.3

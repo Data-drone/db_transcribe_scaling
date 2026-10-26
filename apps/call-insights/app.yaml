@@ -1,0 +1,27 @@
+command: ['pnpm', 'run', 'start']
+env:
+  - name: CALL_INSIGHTS_PUBLIC_URL
+    value: https://call-insights-7474659004185848.aws.databricksapps.com
+  - name: DATABRICKS_WAREHOUSE_ID
+    valueFrom: sql-warehouse
+  - name: LAKEBASE_ENDPOINT
+    valueFrom: postgres
+  - name: DATABRICKS_GENIE_SPACE_ID
+    valueFrom: genie-space
+  - name: DATABRICKS_JOB_LABELS
+    valueFrom: label-worker
+  # OBO-only source files: no service-principal volume grant.
+  - name: DATABRICKS_VOLUME_AUDIO
+    value: /Volumes/serverless_stable_prvwqx_catalog/call_insights/hvb_raw
+  # AppKit 0.84's static Files manifest also requires this alias. Its policy denies access.
+  - name: DATABRICKS_VOLUME_FILES
+    value: /Volumes/serverless_stable_prvwqx_catalog/call_insights/hvb_raw
+  - name: CALL_INSIGHTS_DATA_SCHEMA
+    value: serverless_stable_prvwqx_catalog.call_insights
+  # Existing enrichment model candidate; verify availability before deployment.
+  - name: CALL_INSIGHTS_LABEL_ENDPOINT
+    value: databricks-claude-haiku-4-5
+  - name: CALL_INSIGHTS_LABEL_RUN_CAP
+    value: '10000'
+  - name: CALL_INSIGHTS_LABEL_DAILY_TOKEN_BUDGET
+    value: '5000000'

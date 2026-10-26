@@ -1,0 +1,430 @@
+{
+  "outcome": "passed",
+  "completed_at_utc": "2026-10-25T15:43:16.089505+00:00",
+  "profile": "fevm-serverless-stable-prvwqx",
+  "workspace": "https://fevm-serverless-stable-prvwqx.cloud.databricks.com",
+  "warehouse_id": "8d4699c5c6d30f71",
+  "schema": "serverless_stable_prvwqx_catalog.call_insights",
+  "scope": "Complete existing-corpus transcript masking and refresh the app results; no summary, sentiment or label inference.",
+  "mask_entity_labels": [
+    "person",
+    "email",
+    "phone",
+    "credit_card"
+  ],
+  "before": {
+    "total_calls": 1446,
+    "complete_calls": 50,
+    "source_turns": 15132,
+    "masked_turns": 504,
+    "prompt_transcripts": 50,
+    "preflight_statement_id": "01f1d086-ce7e-15ea-b48a-2e4907608baf"
+  },
+  "after": {
+    "total_calls": 1446,
+    "complete_calls": 1446,
+    "calls_without_turns": 0,
+    "source_turns": 15132,
+    "masked_turns": 15132,
+    "duplicate_source_keys": 0,
+    "duplicate_mask_keys": 0,
+    "duplicate_transcript_keys": 0,
+    "null_source_keys": 0,
+    "blank_source_turns": 0,
+    "blank_mask_rows": 0,
+    "orphan_source_turns": 0,
+    "prompt_transcripts": 1446
+  },
+  "original_masks": {
+    "statement_id": "01f1d08a-973f-1b30-a49f-4b53da4fd5b2",
+    "state": "SUCCEEDED",
+    "rows": [
+      {
+        "original_turns": "504",
+        "missing_original_turns": "0",
+        "changed_original_turns": "0"
+      }
+    ]
+  },
+  "runner_baseline_masks_preserved": {
+    "count": 1503,
+    "sha256": "fe95ad7cbfebcbc25f644109273511372039f29aa3a8fa42013d6e972f72e65c",
+    "unchanged": true
+  },
+  "execution": {
+    "runner": "scripts/backfill-masking.py",
+    "first_batch": {
+      "statement_id": "01f1d087-2aab-1bf4-b8b2-553f80a57f0b",
+      "affected_turns": 1000
+    },
+    "batches": [
+      {
+        "batch": 1,
+        "pending_before": 13629,
+        "pending_after": 8634,
+        "finished_at": "2026-10-25T15:25:33.453654+00:00"
+      },
+      {
+        "batch": 2,
+        "pending_before": 8634,
+        "pending_after": 3643,
+        "finished_at": "2026-10-25T15:30:19.987833+00:00"
+      },
+      {
+        "batch": 3,
+        "pending_before": 3643,
+        "pending_after": 11,
+        "finished_at": "2026-10-25T15:34:53.414711+00:00"
+      },
+      {
+        "batch": 4,
+        "pending_before": 11,
+        "pending_after": 4,
+        "finished_at": "2026-10-25T15:35:18.240591+00:00"
+      },
+      {
+        "batch": 5,
+        "pending_before": 4,
+        "pending_after": 4,
+        "finished_at": "2026-10-25T15:35:37.156891+00:00"
+      }
+    ],
+    "statements": [
+      {
+        "stage": "preflight_coverage",
+        "started_at": "2026-10-25T15:20:12.558135+00:00",
+        "state": "SUCCEEDED",
+        "finished_at": "2026-10-25T15:20:18.221620+00:00",
+        "return_code": 0,
+        "statement_id": "01f1d087-9384-1876-bf6b-d0337358cd01",
+        "elapsed_ms": 3621,
+        "probe_statement_id": "01f1d087-9523-184e-8d29-38a68e43f1a3",
+        "probe_state": "SUCCEEDED"
+      },
+      {
+        "stage": "preflight_mask_hashes",
+        "started_at": "2026-10-25T15:20:18.224098+00:00",
+        "state": "SUCCEEDED",
+        "finished_at": "2026-10-25T15:20:23.424150+00:00",
+        "return_code": 0,
+        "statement_id": "01f1d087-96d2-18b2-9650-4fe2eb43a84c",
+        "elapsed_ms": 3252,
+        "probe_statement_id": "01f1d087-983c-123e-9246-c0be71730187",
+        "probe_state": "SUCCEEDED"
+      },
+      {
+        "stage": "preflight_pending",
+        "started_at": "2026-10-25T15:20:23.439014+00:00",
+        "state": "SUCCEEDED",
+        "finished_at": "2026-10-25T15:20:28.068256+00:00",
+        "return_code": 0,
+        "statement_id": "01f1d087-99e5-1af4-a429-6227a8490d7a",
+        "elapsed_ms": 2647,
+        "probe_statement_id": "01f1d087-9afa-1b7e-b58b-a2353d89e11c",
+        "probe_state": "SUCCEEDED"
+      },
+      {
+        "stage": "mask_batch_1",
+        "started_at": "2026-10-25T15:20:28.079946+00:00",
+        "state": "SUCCEEDED",
+        "finished_at": "2026-10-25T15:25:28.727525+00:00",
+        "return_code": 0,
+        "statement_id": "01f1d087-9cae-1265-952b-e3ccd295db88",
+        "elapsed_ms": 298669,
+        "probe_statement_id": "01f1d088-4e35-122b-9011-59912f09f681",
+        "probe_state": "SUCCEEDED"
+      },
+      {
+        "stage": "pending_after_batch_1",
+        "started_at": "2026-10-25T15:25:28.731314+00:00",
+        "state": "SUCCEEDED",
+        "finished_at": "2026-10-25T15:25:33.448203+00:00",
+        "return_code": 0,
+        "statement_id": "01f1d088-4fe5-1aba-94d9-6b8206aba094",
+        "elapsed_ms": 2740,
+        "probe_statement_id": "01f1d088-5101-1c64-bbda-d67d2e1d6d5b",
+        "probe_state": "SUCCEEDED"
+      },
+      {
+        "stage": "mask_batch_2",
+        "started_at": "2026-10-25T15:25:33.457254+00:00",
+        "state": "SUCCEEDED",
+        "finished_at": "2026-10-25T15:30:15.016680+00:00",
+        "return_code": 0,
+        "statement_id": "01f1d088-52be-1083-9446-ea56b37e6131",
+        "elapsed_ms": 279533,
+        "probe_statement_id": "01f1d088-f8dd-1466-ae22-da0bc5d5aef2",
+        "probe_state": "SUCCEEDED"
+      },
+      {
+        "stage": "pending_after_batch_2",
+        "started_at": "2026-10-25T15:30:15.023445+00:00",
+        "state": "SUCCEEDED",
+        "finished_at": "2026-10-25T15:30:19.983806+00:00",
+        "return_code": 0,
+        "statement_id": "01f1d088-fab9-1a65-9865-78a93af67ce9",
+        "elapsed_ms": 1843,
+        "probe_statement_id": "01f1d088-fbd5-1d6e-9faf-d68607dbf779",
+        "probe_state": "SUCCEEDED"
+      },
+      {
+        "stage": "mask_batch_3",
+        "started_at": "2026-10-25T15:30:19.989579+00:00",
+        "state": "SUCCEEDED",
+        "finished_at": "2026-10-25T15:34:48.480420+00:00",
+        "return_code": 0,
+        "statement_id": "01f1d088-fd75-1d62-82a6-b2e24fbd983f",
+        "elapsed_ms": 266574,
+        "probe_statement_id": "01f1d089-9bdd-1fe7-ac34-cc467aa5107e",
+        "probe_state": "SUCCEEDED"
+      },
+      {
+        "stage": "pending_after_batch_3",
+        "started_at": "2026-10-25T15:34:48.485471+00:00",
+        "state": "SUCCEEDED",
+        "finished_at": "2026-10-25T15:34:53.410657+00:00",
+        "return_code": 0,
+        "statement_id": "01f1d089-9db5-1866-8b94-c6ddb494f442",
+        "elapsed_ms": 2794,
+        "probe_statement_id": "01f1d089-9ecf-18e0-86ec-91892bc5381a",
+        "probe_state": "SUCCEEDED"
+      },
+      {
+        "stage": "mask_batch_4",
+        "started_at": "2026-10-25T15:34:53.417467+00:00",
+        "state": "SUCCEEDED",
+        "finished_at": "2026-10-25T15:35:13.658415+00:00",
+        "return_code": 0,
+        "statement_id": "01f1d089-a071-1277-a681-95a21738f147",
+        "elapsed_ms": 18303,
+        "probe_statement_id": "01f1d089-aadb-1eff-ad8f-fb1701986bfa",
+        "probe_state": "SUCCEEDED"
+      },
+      {
+        "stage": "pending_after_batch_4",
+        "started_at": "2026-10-25T15:35:13.662765+00:00",
+        "state": "SUCCEEDED",
+        "finished_at": "2026-10-25T15:35:18.236693+00:00",
+        "return_code": 0,
+        "statement_id": "01f1d089-ac88-1e4a-83d8-6337057469c7",
+        "elapsed_ms": 2691,
+        "probe_statement_id": "01f1d089-ad9d-183b-9a8d-4d62f11b828f",
+        "probe_state": "SUCCEEDED"
+      },
+      {
+        "stage": "mask_batch_5",
+        "started_at": "2026-10-25T15:35:18.243483+00:00",
+        "state": "SUCCEEDED",
+        "finished_at": "2026-10-25T15:35:32.556696+00:00",
+        "return_code": 0,
+        "statement_id": "01f1d089-af3d-10b3-b61f-fbee953343c1",
+        "elapsed_ms": 12398,
+        "probe_statement_id": "01f1d089-b621-1e36-919f-a48f0b7736b2",
+        "probe_state": "SUCCEEDED"
+      },
+      {
+        "stage": "pending_after_batch_5",
+        "started_at": "2026-10-25T15:35:32.561472+00:00",
+        "state": "SUCCEEDED",
+        "finished_at": "2026-10-25T15:35:37.152295+00:00",
+        "return_code": 0,
+        "statement_id": "01f1d089-b7c4-1e90-9394-af8ac5ce72ee",
+        "elapsed_ms": 2647,
+        "probe_statement_id": "01f1d089-b8da-1e2c-8ab5-c5f6191e93de",
+        "probe_state": "SUCCEEDED"
+      },
+      {
+        "stage": "preflight_coverage",
+        "started_at": "2026-10-25T15:40:04.735511+00:00",
+        "state": "SUCCEEDED",
+        "finished_at": "2026-10-25T15:40:09.628147+00:00",
+        "return_code": 0,
+        "statement_id": "01f1d08a-5a16-1341-81eb-e110ea4f592d",
+        "elapsed_ms": 2799,
+        "probe_statement_id": "01f1d08a-5b40-1b8c-920c-e12128486a23",
+        "probe_state": "SUCCEEDED"
+      },
+      {
+        "stage": "preflight_mask_hashes",
+        "started_at": "2026-10-25T15:40:09.631061+00:00",
+        "state": "SUCCEEDED",
+        "finished_at": "2026-10-25T15:40:15.649303+00:00",
+        "return_code": 0,
+        "statement_id": "01f1d08a-5ceb-1875-8d6f-88caa88e3edb",
+        "elapsed_ms": 4100,
+        "probe_statement_id": "01f1d08a-5ee0-12fe-845f-24611ede2d48",
+        "probe_state": "SUCCEEDED"
+      },
+      {
+        "stage": "preflight_pending",
+        "started_at": "2026-10-25T15:40:15.670222+00:00",
+        "state": "SUCCEEDED",
+        "finished_at": "2026-10-25T15:40:20.318781+00:00",
+        "return_code": 0,
+        "statement_id": "01f1d08a-6081-1f01-983c-62557986d8f2",
+        "elapsed_ms": 2657,
+        "probe_statement_id": "01f1d08a-61a6-1b68-99aa-ed8afa98ac32",
+        "probe_state": "SUCCEEDED"
+      },
+      {
+        "stage": "merge_prompt_transcripts",
+        "started_at": "2026-10-25T15:40:20.330167+00:00",
+        "state": "SUCCEEDED",
+        "finished_at": "2026-10-25T15:40:26.374030+00:00",
+        "return_code": 0,
+        "statement_id": "01f1d08a-634f-15e3-a32d-e9f69ebb7bcc",
+        "elapsed_ms": 4145,
+        "probe_statement_id": "01f1d08a-654a-1791-a137-0ebf8802c323",
+        "probe_state": "SUCCEEDED"
+      },
+      {
+        "stage": "final_coverage",
+        "started_at": "2026-10-25T15:40:26.380985+00:00",
+        "state": "SUCCEEDED",
+        "finished_at": "2026-10-25T15:40:32.259774+00:00",
+        "return_code": 0,
+        "statement_id": "01f1d08a-66eb-12b5-88ae-e0bb8c9ee4c9",
+        "elapsed_ms": 3927,
+        "probe_statement_id": "01f1d08a-68c5-199f-ba37-cda16c3133b5",
+        "probe_state": "SUCCEEDED"
+      },
+      {
+        "stage": "final_mask_hashes",
+        "started_at": "2026-10-25T15:40:32.263420+00:00",
+        "state": "SUCCEEDED",
+        "finished_at": "2026-10-25T15:40:40.035621+00:00",
+        "return_code": 0,
+        "statement_id": "01f1d08a-6a68-1f96-adf8-169978f1d06e",
+        "elapsed_ms": 5855,
+        "probe_statement_id": "01f1d08a-6d69-171c-8964-31e39c10e23f",
+        "probe_state": "SUCCEEDED"
+      }
+    ],
+    "empty_output_recovery": {
+      "affected_turns": 4,
+      "statement_id": "01f1d08a-4aa5-1df9-89fb-3156e3a790bd",
+      "method": "Reused a reviewed existing masked output for byte-identical source text, choosing the variant that redacts the payment recipient. Existing valid masks were preserved.",
+      "model_retries_before_review": true
+    }
+  },
+  "independent_sql_checks": {
+    "original_masks_preserved": {
+      "statement_id": "01f1d08a-973f-1b30-a49f-4b53da4fd5b2",
+      "state": "SUCCEEDED",
+      "rows": [
+        {
+          "original_turns": "504",
+          "missing_original_turns": "0",
+          "changed_original_turns": "0"
+        }
+      ]
+    },
+    "prompt_and_mask_integrity": {
+      "statement_id": "01f1d08a-9740-1b00-a7ae-8269d924888f",
+      "state": "SUCCEEDED",
+      "rows": [
+        {
+          "prompt_transcripts": "1446",
+          "blank_prompt_transcripts": "0",
+          "prompt_count_mismatches": "0",
+          "orphan_mask_rows": "0"
+        }
+      ]
+    },
+    "genie_view_coverage": {
+      "statement_id": "01f1d08a-9740-1a27-b633-cbf2b975a983",
+      "state": "SUCCEEDED",
+      "rows": [
+        {
+          "queue": "Account access",
+          "recorded_calls": "362",
+          "completely_masked_calls": "362",
+          "annotated_calls": "13"
+        },
+        {
+          "queue": "Cards and checks",
+          "recorded_calls": "366",
+          "completely_masked_calls": "366",
+          "annotated_calls": "13"
+        },
+        {
+          "queue": "General enquiries",
+          "recorded_calls": "368",
+          "completely_masked_calls": "368",
+          "annotated_calls": "13"
+        },
+        {
+          "queue": "Payments",
+          "recorded_calls": "350",
+          "completely_masked_calls": "350",
+          "annotated_calls": "11"
+        }
+      ]
+    }
+  },
+  "app_verification": {
+    "validatedAtUtc": "2026-10-25T15:43:16.089505+00:00",
+    "profile": "fevm-serverless-stable-prvwqx",
+    "appUrl": "https://call-insights-7474659004185848.aws.databricksapps.com",
+    "actor": "brian.law@databricks.com",
+    "coverage": {
+      "total_count": "1446",
+      "enriched_count": "50",
+      "masked_complete_count": "1446",
+      "scope_count": "1446",
+      "scope_enriched_count": "50",
+      "latest_processed_at": "2026-10-22T23:50:50.754Z"
+    },
+    "calls": [
+      {
+        "interactionId": "076cd53656c64dc5",
+        "turns": 14,
+        "maskedNonblankTurns": 14
+      },
+      {
+        "interactionId": "06ff201c1fd84e1c",
+        "turns": 8,
+        "maskedNonblankTurns": 8
+      },
+      {
+        "interactionId": "3a0816e7820f4547",
+        "turns": 21,
+        "maskedNonblankTurns": 21
+      }
+    ]
+  },
+  "deployment": {
+    "app_name": "call-insights",
+    "app_url": "https://call-insights-7474659004185848.aws.databricksapps.com",
+    "deployment_id": "01f1d08a8ca712e98030036e2f9f3685",
+    "state": "SUCCEEDED",
+    "app_state": "RUNNING",
+    "compute_state": "ACTIVE",
+    "resource_changes": {
+      "created": 0,
+      "changed": 0,
+      "deleted": 0,
+      "unchanged": 2
+    },
+    "cache_refresh": "Six query revisions change the AppKit cache hashes. Existing one-hour cache policy is unchanged.",
+    "query_sha256": {
+      "call_segments": "2a781ba961d6eeb572665d3cede88d3fad46358f2ba1c1d635908a548425fbec",
+      "explore_count": "af9d8386986fa4ad53ff157833a17b8cacf216e9dabfa45ca1253b9f4b4e438a",
+      "explore_interactions": "35164d64c250e7ace177f597f682037cad170949ebe05f9918364b00750fd085",
+      "call_key_moments": "f9f3932b8128c0bb6b97dd8d30ea81af429003cb2b0d8f04b5d13d3b99339d80",
+      "intelligence_results": "78be1f2b39fe48ef469ef4a0c331cbda1bb34760570812ec7743384b5c02d2e8",
+      "intelligence_candidates": "b1fd8e4a369115961015df0e8dc7e6139249348e5a2911c9c1d2e5306a0373da"
+    }
+  },
+  "validation": {
+    "databricks_apps_validate": "passed: type generation, AST lint, typecheck, production build and tests",
+    "unit_tests_passed": 52,
+    "runner_syntax": "passed"
+  },
+  "remaining_scope": {
+    "ai_enrichment_calls": 50,
+    "prior_accepted_label_run_frozen_calls": 50,
+    "automatic_incremental_masking": false
+  },
+  "privacy": "No source transcript text, masked output text or credentials are stored in this validation report."
+}

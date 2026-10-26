@@ -1,0 +1,69 @@
+{
+  "recordedAtUtc": "2026-10-25T13:47:13Z",
+  "result": "passed",
+  "appUrl": "https://call-insights-7474659004185848.aws.databricksapps.com",
+  "identity": {
+    "email": "brian.law@databricks.com",
+    "profile": "fevm-serverless-stable-prvwqx",
+    "authentication": "OAuth bearer through the trusted Databricks Apps proxy",
+    "whoamiStatus": 200,
+    "trustedUserAndEmailPresent": true,
+    "caseOwnerMatchesAuthenticatedEmail": true,
+    "fabricatedForwardedHeaders": false
+  },
+  "audio": {
+    "sourceId": "0002f70f7386445b",
+    "totalBytes": 1635596,
+    "cacheControl": "private, no-store",
+    "checks": [
+      {
+        "range": "bytes=0-43",
+        "status": 206,
+        "contentRange": "bytes 0-43/1635596",
+        "bodyBytes": 44,
+        "wavRiffAndWaveSignatures": true,
+        "contentType": "audio/wav"
+      },
+      {
+        "range": "bytes=-16",
+        "status": 206,
+        "contentRange": "bytes 1635580-1635595/1635596",
+        "bodyBytes": 16
+      },
+      {
+        "range": "bytes=1635596-",
+        "status": 416,
+        "contentRange": "bytes */1635596"
+      },
+      {
+        "path": "/api/files/audio/list",
+        "status": 403
+      },
+      {
+        "path": "/api/files/files/list",
+        "status": 403
+      }
+    ]
+  },
+  "investigation": {
+    "caseId": "7981f712-04b0-40ee-842d-829c739b93fa",
+    "caseUrl": "https://call-insights-7474659004185848.aws.databricksapps.com/cases/7981f712-04b0-40ee-842d-829c739b93fa",
+    "testRecordsCreated": 1,
+    "sourceId": "0002f70f7386445b",
+    "rangeSeconds": { "start": 3.47, "end": 10.35 },
+    "checks": {
+      "registeredOboQueriesReturnedRealMaskedSource": true,
+      "caseCreated": true,
+      "savedClipMatchedIndependentMaskedSource": true,
+      "analystNoteSaved": true,
+      "freshReloadPreservedEvidenceNoteAndVersion": true,
+      "markdownExportContainedVerifiedEvidenceAndNote": true,
+      "exportIncludedSelectedSampleLimitations": true,
+      "exportHttpsOriginTimestampAndReturnLinkMatched": true
+    },
+    "exportSourceLink": "https://call-insights-7474659004185848.aws.databricksapps.com/calls/0002f70f7386445b?t=3.47&from=%2Fcases%2F7981f712-04b0-40ee-842d-829c739b93fa"
+  },
+  "limitations": [
+    "Only one authenticated identity was exercised. Live named-reader sharing and restricted-user source isolation remain unverified; local ACL tests do not establish live multi-user isolation."
+  ]
+}

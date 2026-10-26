@@ -1,0 +1,58 @@
+{
+  "name": "banking-personas-v1",
+  "seed": 42,
+  "sample_rate": 16000,
+  "personas": [
+    {
+      "id": "agent_calm",
+      "role": "agent",
+      "language": "English",
+      "description": "An adult woman with a clear Australian English accent, medium pitch, calm professional delivery and measured pacing, like a bank customer service representative.",
+      "reference_text": "Thanks for calling. I can help you check that payment and explain the next steps."
+    },
+    {
+      "id": "customer_worried",
+      "role": "customer",
+      "language": "English",
+      "description": "An older adult man with an Australian English accent, low slightly gravelly voice, worried but polite delivery and occasional natural hesitation.",
+      "reference_text": "Hello, I am a little worried because I cannot find the transfer I made yesterday."
+    },
+    {
+      "id": "customer_brisk",
+      "role": "customer",
+      "language": "English",
+      "description": "An adult woman with an Australian English accent, bright midrange voice, brisk and mildly frustrated delivery, speaking clearly but quickly.",
+      "reference_text": "I have checked twice already, and I would really like to get this sorted out today."
+    }
+  ],
+  "conversations": [
+    {
+      "id": "missing_transfer",
+      "scenario": "A delayed bank transfer leads to a support call; test recognition of amounts and dates.",
+      "split": "validation",
+      "turns": [
+        {"persona": "agent_calm", "text": "Thanks for calling. Which payment would you like me to check?"},
+        {"persona": "customer_worried", "text": "I sent two hundred and forty dollars yesterday, but it has not arrived."},
+        {"persona": "agent_calm", "text": "Was that Tuesday the twenty second, and did you send it before five?"},
+        {"persona": "customer_worried", "text": "Yes, around half past three. The reference was garden repairs."}
+      ]
+    },
+    {
+      "id": "duplicate_charge",
+      "scenario": "A duplicate charge prompts a frustrated interruption; test overlap and merchant names.",
+      "split": "test",
+      "turns": [
+        {"persona": "customer_brisk", "text": "There are two charges from Green Valley Market, both for eighty nine dollars."},
+        {"persona": "agent_calm", "text": "I can check whether one is still pending. Could you tell me the date?"},
+        {"persona": "customer_brisk", "text": "Sorry, they are both showing as completed, on Thursday.", "gap_seconds": -0.25},
+        {"persona": "agent_calm", "text": "Thank you. I will check the transaction records before we raise a dispute."}
+      ]
+    }
+  ],
+  "conditions": [
+    {"id": "phone", "bandpass_hz": [300, 3400], "noise_snr_db": 25},
+    {"id": "radio_poor", "bandpass_hz": [400, 2800], "noise_snr_db": 8,
+      "dropouts": {"count": 2, "duration_ms": 80}, "clip_level": 0.12},
+    {"id": "room_echo", "echo": {"delay_ms": 90, "gain": 0.35}, "noise_snr_db": 20}
+  ]
+}

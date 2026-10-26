@@ -1,0 +1,152 @@
+{
+  "verified_at": "2026-10-25T14:00:44.300515+00:00",
+  "app_url": "https://call-insights-7474659004185848.aws.databricksapps.com",
+  "profile": "fevm-serverless-stable-prvwqx",
+  "identity": {
+    "email": "brian.law@databricks.com",
+    "user": "5695311364667414@7474659004185848"
+  },
+  "label_id": "05cbec8a-ab9e-47c8-a24e-becd07491c65",
+  "definition_version": 2,
+  "definition_versions_persisted": 2,
+  "prior_revision_unchanged": true,
+  "full_run_before_successful_sample_http_status": 409,
+  "model_endpoint": "databricks-claude-haiku-4-5",
+  "sample": {
+    "run_id": "95c8dc17-f843-4af2-b09d-b3953c00519d",
+    "label_id": "05cbec8a-ab9e-47c8-a24e-becd07491c65",
+    "version": 2,
+    "run_type": "sample",
+    "status": "completed",
+    "interactions_in_scope": 20,
+    "processed_count": 20,
+    "matched_count": 2,
+    "error_count": 0,
+    "ungrounded_count": 0,
+    "estimated_tokens": 15733,
+    "started_at": "2026-10-25 13:54:53.015896",
+    "finished_at": "2026-10-25 13:55:40.253369",
+    "model_endpoint": "databricks-claude-haiku-4-5",
+    "error_message": "",
+    "job_run_id": "734044818230554"
+  },
+  "full": {
+    "run_id": "958d3672-a70d-4b20-97b0-bdce02318ee8",
+    "label_id": "05cbec8a-ab9e-47c8-a24e-becd07491c65",
+    "version": 2,
+    "run_type": "full",
+    "status": "completed",
+    "interactions_in_scope": 50,
+    "processed_count": 50,
+    "matched_count": 8,
+    "error_count": 0,
+    "ungrounded_count": 0,
+    "estimated_tokens": 38682,
+    "started_at": "2026-10-25 13:58:13.517373",
+    "finished_at": "2026-10-25 13:59:24.38355",
+    "model_endpoint": "databricks-claude-haiku-4-5",
+    "error_message": "",
+    "job_run_id": "1053497515272110"
+  },
+  "frozen_preview": {
+    "cohortId": "d370d028-b75d-4e7e-94f7-317088f955f6",
+    "count": 50,
+    "estimatedTokens": 38682,
+    "modelEndpoint": "databricks-claude-haiku-4-5",
+    "inputCost": null,
+    "outputCost": null,
+    "expiresAt": "2026-10-25T14:28:09.341Z"
+  },
+  "verification": {
+    "sample_result_count": 20,
+    "full_result_count": 50,
+    "unique_full_source_ids": 50,
+    "grounded_full_matches": 8,
+    "persisted_sample_verdicts": {
+      "0002f70f7386445b": "correct",
+      "0091a706bc604188": "correct"
+    },
+    "source_reviews": [
+      {
+        "interaction_id": "0002f70f7386445b",
+        "source_role": "customer",
+        "source_start_seconds": 12.67,
+        "model_decision": "match",
+        "verdict": "correct",
+        "quote_verbatim_in_masked_turn": true,
+        "review_basis": "Explicit lost debit card and request for a new card in the authorized masked transcript."
+      },
+      {
+        "interaction_id": "0091a706bc604188",
+        "model_decision": "non-match",
+        "verdict": "correct",
+        "review_basis": "All authorized masked customer turns request an account balance; no card replacement request."
+      }
+    ],
+    "breakdown_totals": {
+      "queue": 50,
+      "agent": 50,
+      "day": 50
+    },
+    "queue_breakdown": [
+      {
+        "queue": "Cards and checks",
+        "evaluated_count": 13,
+        "matched_count": 8,
+        "error_count": 0
+      },
+      {
+        "queue": "Account access",
+        "evaluated_count": 13,
+        "matched_count": 0,
+        "error_count": 0
+      },
+      {
+        "queue": "General enquiries",
+        "evaluated_count": 13,
+        "matched_count": 0,
+        "error_count": 0
+      },
+      {
+        "queue": "Payments",
+        "evaluated_count": 11,
+        "matched_count": 0,
+        "error_count": 0
+      }
+    ],
+    "latest_library_summary": {
+      "label_id": "05cbec8a-ab9e-47c8-a24e-becd07491c65",
+      "version": "2",
+      "run_type": "full",
+      "status": "completed",
+      "started_at": "2026-10-25 13:58:13.517373",
+      "interactions_in_scope": "50",
+      "matched_count": "8",
+      "reviewed_count": "0",
+      "correct_count": "0"
+    },
+    "read_path": "Fresh authenticated app business endpoints and named OBO analytics SSE queries; no fabricated trusted headers."
+  },
+  "resolved_preflight_issues": [
+    {
+      "issue": "Successful empty prior-sample SELECT omitted data; route parsed it as invalid input.",
+      "resolution": "Default successful missing data to empty array; regression passes and live pre-sample full run returns409."
+    },
+    {
+      "issue": "Warehouse INSERT required SELECT in addition to MODIFY on label_run_scope.",
+      "resolution": "Narrow snapshot-table SELECT granted to app identity; no source-table grant added.",
+      "retained_failed_run_id": "258dd042-1597-490f-844f-312fab2263da",
+      "retained_failed_run_snapshots": 0,
+      "retained_failed_run_worker_started": false
+    }
+  ],
+  "limits": [
+    "Single authorized identity; restricted second-identity acceptance remains outstanding.",
+    "No inference-accuracy, latency, or cost target established.",
+    "Automatic incremental tracking is not implemented.",
+    "Only two sample decisions were source-reviewed; no whole-cohort accuracy claim.",
+    "Full-run decisions retain their own unreviewed status; sample verdicts are not silently copied.",
+    "Audio playback/browser acceptance is recorded separately by the deployment lead.",
+    "Automatic retry/idempotence after worker failure was not forced during this live test."
+  ]
+}

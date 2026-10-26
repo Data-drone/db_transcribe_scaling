@@ -99,7 +99,9 @@ function resultFor(call: Interaction, label: { id: string; definition: string })
     .split(/[^a-z]+/)
     .filter((t) => t.length > 5);
   const tagged = call.labels.includes(label.id);
-  const hit = call.segments.find((s) => terms.some((t) => s.text.toLowerCase().includes(t)));
+  const mentions = (s: Interaction['segments'][number]) => terms.some((t) => s.text.toLowerCase().includes(t));
+  // Prefer the customer's words: that is where an analyst-described pattern usually shows.
+  const hit = call.segments.find((s) => s.role === 'customer' && mentions(s)) ?? call.segments.find(mentions);
   const matched = tagged || (!!hit && !INITIAL_LABELS.some((l) => l.id === label.id));
   const evidence = matched ? (hit ?? firstCustomer(call)) : undefined;
   return {

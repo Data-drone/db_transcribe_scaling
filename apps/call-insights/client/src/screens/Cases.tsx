@@ -182,7 +182,7 @@ function CaseBody({ record, onChange }: { record: Investigation; onChange: (valu
               <h2>
                 {record.title}{' '}
                 {record.canEdit ? (
-                  <button className="link small" type="button" onClick={() => setEditing(true)}>
+                  <button className="link small edit-title" type="button" onClick={() => setEditing(true)}>
                     Edit
                   </button>
                 ) : null}
@@ -271,11 +271,11 @@ function CaseBody({ record, onChange }: { record: Investigation; onChange: (valu
             <div className="column" style={{ gap: 16 }}>
               {record.items
                 .filter((it) => it.type !== 'note')
-                .map((it, index) =>
+                .map((it) =>
                   it.type === 'clip' ? (
                     <article className="evidence-card" key={it.id}>
                       <div className="row between">
-                        <span className="eyebrow">EVIDENCE {String(index + 1).padStart(2, '0')}</span>
+                        <span className="eyebrow">EVIDENCE {String(clips.indexOf(it) + 1).padStart(2, '0')}</span>
                         {record.excerpts[it.id]?.queue ? <span className="tag">{record.excerpts[it.id].queue}</span> : null}
                       </div>
                       <h4>

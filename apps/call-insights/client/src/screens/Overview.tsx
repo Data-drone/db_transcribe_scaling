@@ -148,7 +148,7 @@ function ChangesPanel({
           <h3>Nothing moved past ±{Math.round(value.threshold * 100)}%</h3>
           <p className="muted">
             Contact reasons, themes and tracked labels are within ±{Math.round(value.threshold * 100)}% of their share in the previous period (
-            {value.previousCalls.toLocaleString()} calls).
+            {value.previousCalls.toLocaleString()} {value.previousCalls === 1 ? 'call' : 'calls'}).
           </p>
         </div>
       ) : (

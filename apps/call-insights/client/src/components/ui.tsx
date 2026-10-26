@@ -69,7 +69,7 @@ export function Async<T>({ value, label, children }: { value: Loaded<T>; label?:
   if (value.error && value.data === undefined) return <ErrorNote error={value.error} retry={value.reload} />;
   if (value.data === undefined) return <Loading label={label} />;
   return (
-    <div className={value.loading ? 'refreshing' : undefined} aria-busy={value.loading}>
+    <div className={`async${value.loading ? ' refreshing' : ''}`} aria-busy={value.loading}>
       {value.error ? <ErrorNote error={value.error} retry={value.reload} /> : null}
       {children(value.data)}
     </div>

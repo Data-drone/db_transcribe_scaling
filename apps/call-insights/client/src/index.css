@@ -263,7 +263,10 @@ dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
 .loading { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; padding: 18px 0; }
 .spinner { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--accent); animation: ci-spin .8s linear infinite; }
 @keyframes ci-spin { to { transform: rotate(360deg); } }
+.edit-title { font-size: 12px; font-weight: 500; letter-spacing: 0; vertical-align: middle; margin-left: 8px; }
+.async { display: flex; flex-direction: column; gap: inherit; min-width: 0; }
 .refreshing { opacity: .6; transition: opacity .2s; }
+.box .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 12px 0; }
 .error-note { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; border-color: #5a2a30; }
 .error-note p { color: #ffb3b8; }
 .change-list { display: flex; flex-direction: column; gap: 8px; }

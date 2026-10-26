@@ -159,6 +159,10 @@ export function registerInvestigationRoutes(app: IAppRouter, store: DocumentStor
           throw new HttpError(409, 'The transcript timing extends beyond the current conversation.');
         storedItem = { ...item, start: selection.start, end: selection.end };
       }
+      if (item.type === 'label') {
+        const label = await database().get('label', item.refId, actor);
+        if (!label) throw new HttpError(404, 'Label not found.');
+      }
       const next = await database().put(
         'investigation',
         record.id,
@@ -234,6 +238,8 @@ export function investigationBrief(record: Investigation, origin: string) {
   const evidence = record.items
     .map((item) => {
       if (item.type === 'note') return `### Analyst note\n\n${item.note}`;
+      if (item.type === 'theme' || item.type === 'label')
+        return `### ${item.type === 'theme' ? 'Theme' : 'Label result'} · ${item.title ?? item.refId ?? ''}\n\n${item.scope ? `Scope: ${item.scope}\n\n` : ''}Analyst note: ${item.note}`;
       const params = new URLSearchParams({ t: String(item.start), from: `/cases/${record.id}` });
       const link = new URL(`/calls/${encodeURIComponent(item.interactionId ?? '')}?${params.toString()}`, origin);
       return `### ${item.interactionId} · ${item.start}–${item.end}s\n\n> ${record.excerpts[item.id]?.text ?? ''}\n\nAnalyst note: ${item.note}\n\n[Open conversation](${link.href})`;

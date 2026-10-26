@@ -1,6 +1,8 @@
 # Call Insights
 
-A Databricks AppKit app for exploring persisted HarperValleyBank calls, reviewing original audio and masked transcript evidence, and building shared investigations. The red/black design is implemented in this app; the separate `prototypes/call-insights` mock is not a deployment source.
+A Databricks AppKit app for exploring persisted HarperValleyBank calls, reviewing original audio and masked transcript evidence, discovering themes, tracking labels and building shared investigations.
+
+The UI is the former `prototypes/call-insights` mock, now the app's only client. The same screens run on real warehouse data (locally with `pnpm dev`, or deployed) or on fictional sample data with no workspace (`pnpm dev:sample`). There is no separate prototype to keep in step.
 
 ## Current status
 
@@ -16,7 +18,50 @@ Implemented flows:
 - Labels persist immutable definition versions, run real stratified samples and frozen full cohorts through a durable Lakeflow worker, record reviewer verdicts, and show queue/agent/day results. See [Intelligence behavior and acceptance](docs/intelligence.md).
 - Ask uses the bound, reviewed Genie space through AppKit's OBO chat, exposes generated SQL and links interaction IDs to source conversations. Three workspace Genie checks matched warehouse ground truth, and the deployed app's OBO chat bridge completed with the then-current Payments counts (350 recorded, 11 completely masked). Browser interaction remains pending. See [Genie validation](docs/genie-live-validation.json).
 
-Automatic incremental label tracking is **not implemented**. Semantic search, Themes, typed label findings attached directly to cases and measured business-impact estimates also remain outside the implemented scope. The [product specification](../../docs/call-insights-spec.md) includes requirements beyond this first complete source-evidence flow.
+Themes, “What's changed”, daily label tracking and theme/label context items in cases are implemented as of 26 October 2026 but **not yet run against the workspace**: their tables, jobs and grants need the setup below, and live acceptance is pending. Semantic search and measured business-impact estimates remain outside the implemented scope. The [product specification](../../docs/call-insights-spec.md) includes requirements beyond this first complete source-evidence flow.
+
+## One UI, two data modes
+
+Every screen reads through one `DataSource` interface (`client/src/data/source.ts`):
+
+| Mode | Where it runs | Data |
+| --- | --- | --- |
+| `live` | `pnpm dev` locally, and the deployed app | `/api/insights/*`, `/api/investigations/*`, `/api/intelligence/*` and Genie, all as the signed-in user |
+| `fixtures` | `pnpm dev:sample` (offline, `http://127.0.0.1:5174`), or the sidebar “Switch to sample data” link | Fictional calls in `client/src/data/fixtures`; cases and labels persist in browser storage; label runs are simulated |
+
+Both modes return the same shapes (`shared/insights.ts`), and fixture analytics are computed from the fixture calls with the same rules as the SQL (for example, period-over-period shares). `VITE_DATA_SOURCE=fixtures` builds a bundle that never calls the server (`pnpm build:sample`).
+
+Locally, `pnpm dev` runs the real server against Databricks. AppKit 0.84's development middleware forwards your `DATABRICKS_CONFIG_PROFILE` identity on `localhost` requests, so per-user SQL, investigations and labels behave as they do when deployed, with your own permissions. Open the app on `localhost`, not a LAN address.
+
+### Insights API
+
+`server/insights/routes.ts` exposes read-only JSON endpoints. Each runs only fixed `config/queries/*.obo.sql` files as the requesting user and rejects requests without a trusted identity:
+
+| Endpoint | Queries |
+| --- | --- |
+| `GET /api/insights/bounds` | `dataset_bounds`, `queue_stats` |
+| `GET /api/insights/overview` | `overview_summary`, `overview_contact_reasons`, `daily_activity` |
+| `GET /api/insights/changes` | `overview_summary`, `overview_changes` |
+| `GET /api/insights/explore` | `explore_interactions`, `explore_count` (now with a theme filter) |
+| `GET /api/insights/calls/:id` | `call_detail`, `call_segments`, `call_key_moments`, `call_themes` |
+| `GET /api/insights/themes[/:id]` | `themes_list`, `theme_breakdown`, `theme_calls` |
+
+Scope parameters are `queue`, `start` and `end` (`YYYY-MM-DD`). The UI's periods (latest day, 7, 30, 90 days, all) are anchored on the latest recording in the data, not today's date.
+
+## Themes, What's changed and tracked labels
+
+These three features are new backends. Set them up in this order with the project profile:
+
+1. **Tables.** As the data owner, run `resources/theme-tables.sql` and `resources/label-tracking.sql`. Do this before `pnpm run typegen` or `pnpm dev`, because type generation describes queries that read these views.
+2. **Enrichment coverage.** Themes and contact-reason changes use AI enrichment, which currently covers 50 calls. Run `HarperValleyBank Enrichment` with `max_calls=all` first (review its known caching issues in `docs/codebase-review.md`).
+3. **Deploy jobs.** `databricks bundle deploy -t default --profile fevm-serverless-stable-prvwqx` now also creates `call-insights-theme-builder` (weekly) and `call-insights-label-tracker` (daily). Run the theme builder once by hand.
+4. **Grants.** Analysts need `SELECT` on `theme_run_current`, `themes_current`, `theme_membership_current` and `label_tracking_visible`. The app service principal needs `SELECT, MODIFY` on `label_tracking`. Job run-as identities need the grants listed in each job file.
+
+How they work:
+
+- **Themes.** `Call Insights Theme Builder` embeds each enriched call's topic phrase and summary (`databricks-gte-large-en`), clusters with k-means (k chosen by silhouette), names clusters from their most central calls with Haiku, and keeps theme IDs stable across runs by centroid similarity. It records agreement with the reference HarperValleyBank intents as `purity`. Theme counts in the app always join `interactions` as the viewer.
+- **What's changed.** `overview_changes` compares each contact reason, theme and enabled tracked label's *share of evaluated calls* with the previous equal-length period, and flags moves of at least ±25% with at least 3 current calls. It returns nothing when the previous period has no calls. With the current corpus (four recording days in 2020), choose “Latest day” to see a comparison; the planted synthetic calls from `data-generation` are needed for a realistic multi-week story.
+- **Tracked labels.** An owner can track a label version after a completed full run of that version, and only after an on-behalf-of check that they can read the scope. The daily tracker freezes completely masked calls in scope that the version has not yet evaluated and runs them through the existing label worker. **It runs as the job's identity, not the label owner**; results stay owner-filtered through the `*_visible` views and are re-joined to sources as the viewer. Treat this as an approved shared entitlement before enabling tracking for other users.
 
 ## Data and identity
 
@@ -63,6 +108,9 @@ All 16 analytics query types were regenerated against the selected workspace. Ru
 
 ## Local development
 
-Install with `pnpm install --frozen-lockfile`, copy `.env.example` to `.env`, and fill resource values from the provisioned resources. Preserve the deployed app SP's ownership of the state schema. The template and local environment use `fevm-serverless-stable-prvwqx`. Keep credentials out of source. `pnpm run dev` starts the AppKit server at the configured port; its `predev` hook generates live query types and therefore requires this profile to be authenticated. Do not rely on the global `DEFAULT`.
+Install with `pnpm install --frozen-lockfile`, copy `.env.example` to `.env`, and fill resource values from the provisioned resources. Preserve the deployed app SP's ownership of the state schema. The template and local environment use `fevm-serverless-stable-prvwqx`. Keep credentials out of source. Do not rely on the global `DEFAULT`.
 
-Offline checks are `pnpm run typecheck`, `pnpm run lint`, `pnpm test`, `pnpm run build:server` and `pnpm run build:client`. The full `pnpm run build` additionally syncs plugin metadata; live query-type generation is a separate `pnpm run typegen` step.
+- `pnpm dev`: the real app on real data at `http://localhost:8000`, as you. Its `predev` hook generates live query types, so the profile must be authenticated and the theme/tracking tables must exist.
+- `pnpm dev:sample`: the same UI on fixtures at `http://127.0.0.1:5174`, with no server, workspace or credentials. Use it for UI work and demos.
+
+Offline checks are `pnpm run typecheck`, `pnpm run lint`, `pnpm test`, `pnpm run build:server`, `pnpm run build:client` and `pnpm run build:sample`. The full `pnpm run build` additionally syncs plugin metadata; live query-type generation is a separate `pnpm run typegen` step.

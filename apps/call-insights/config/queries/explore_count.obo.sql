@@ -7,6 +7,7 @@
 -- @param contact_reason STRING
 -- @param sentiment STRING
 -- @param enriched_only STRING
+-- @param theme_id STRING
 WITH mask_inventory AS (
   SELECT s.interaction_id,
     COUNT(DISTINCT s.segment_idx) AS segment_count,
@@ -57,6 +58,9 @@ WITH mask_inventory AS (
     AND (:sentiment = '' OR sentiment_end = :sentiment)
     AND (:enriched_only <> 'true' OR is_enriched)
     AND (:search_text = '' OR keyword_match = 1)
+    AND (:theme_id = '' OR EXISTS (
+      SELECT 1 FROM serverless_stable_prvwqx_catalog.call_insights.theme_membership_current tm
+      WHERE tm.interaction_id = scoped.interaction_id AND tm.theme_id = :theme_id))
 )
 SELECT COUNT(*) AS total_count,
   COUNT(CASE WHEN is_enriched THEN 1 END) AS enriched_count,

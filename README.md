@@ -12,9 +12,7 @@ models/
   transcription/          # Qwen3-ASR packaging, UC registration and GPU serving
 data-generation/          # synthetic personas, TTS, interference and AIR batch launcher
 apps/
-  call-insights/          # Databricks AppKit app backed by persisted call data
-prototypes/
-  call-insights/          # mock React app covering the broader analyst UX
+  call-insights/          # Databricks AppKit app; same UI runs on live data or offline sample data
 docs/                     # product spec, wireframes and code review
 ```
 
@@ -24,8 +22,7 @@ docs/                     # product spec, wireframes and code review
 | HarperValleyBank example | [Notebook guide](notebooks/harper_valley_bank/README.md)         | Loader, channel-aware transcription, metrics, WER evaluation and enrichment notebooks                                                                           |
 | Custom ASR serving       | [Serving guide and model choice](models/transcription/README.md) | Qwen3-ASR wrapper, GPU registration, deployment and query code; UC version 2 is live; real A10G packaging, managed endpoint and companion query notebook passed |
 | Synthetic audio          | [Generation guide](data-generation/README.md)                    | Qwen persona speech, paired clean/degraded audio, conversation mixing and AIR launcher; GPU validation pending                                                  |
-| Call Insights            | [App guide](apps/call-insights/README.md)                        | Deployed red/black app with SQL-backed exploration, original audio, durable investigations and a bound Genie space; see the app guide for remaining acceptance  |
-| UX prototype             | [Prototype guide](prototypes/call-insights/README.md)            | Fictional local data, browser-persisted investigations and simulated Labels/Ask workflows; separate from the deployed app                                       |
+| Call Insights            | [App guide](apps/call-insights/README.md)                        | Deployed red/black app with SQL-backed exploration, original audio, durable investigations and Genie; themes, period changes and label tracking added, pending workspace setup |
 
 ## How the pieces connect
 
@@ -48,7 +45,7 @@ The [app data contract](apps/call-insights/README.md#data-contract) documents th
 
 1. Choose a notebook example and follow its README to configure the catalog, schema and volume and run the notebooks in order. These are Databricks source-format Python notebooks, intended for Databricks compute.
 2. For Call Insights, first produce compatible HarperValleyBank tables, including the enrichment tables, then follow the [app setup](apps/call-insights/README.md). Local app development still queries Databricks; it requires credentials and a SQL warehouse.
-3. To explore the full mock UX without a workspace, run the [prototype](prototypes/call-insights/README.md).
+3. To work on the UI without a workspace, run `pnpm dev:sample` in `apps/call-insights`: the same app on fictional sample data.
 4. For custom ASR, follow the [model-serving guide](models/transcription/README.md). GPU packaging, managed endpoint inference and the companion serverless query notebook passed. Use the [MLflow comparison notebook](models/transcription/notebooks/02_compare_transcription.py) to measure accuracy, latency and throughput across concurrency levels on identical reference audio. The main pipeline backend adapter and larger representative benchmark runs remain future work.
 5. For synthetic evaluation fixtures, follow the [data generation guide](data-generation/README.md). It runs independently with its own dependencies and includes a model-free plumbing check. AIR is the batch generation path; real TTS and remote GPU execution still need validation.
 
@@ -66,13 +63,6 @@ pnpm install --frozen-lockfile
 pnpm run typecheck
 pnpm run lint
 pnpm test
-```
-
-```bash
-cd prototypes/call-insights
-npm ci
-npm run build
-npm run lint
 ```
 
 The AppKit project has automated tests for cohort navigation, masked-source boundaries, case access, audio delivery and label execution prerequisites. The [deployment readiness record](apps/call-insights/docs/deployment-readiness.md) links the passed live API checks and records browser, worker and permission-isolation acceptance status. API checks do not establish browser behavior or complete product scope. The model-serving subproject has [Python checks](models/transcription/README.md#local-verification), including an MLflow roundtrip with mocked inference. Notebook execution requires Databricks runtime checks.

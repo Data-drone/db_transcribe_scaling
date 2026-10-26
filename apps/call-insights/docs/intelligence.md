@@ -13,6 +13,14 @@ The app is [deployed](https://call-insights-7474659004185848.aws.databricksapps.
 
 Explore can start a draft at `/labels?new=1&prefill_q=...&queue=...&start=...&end=...`. Only queue and dates become SQL cohort filters; keyword and other search selections are explicitly draft hypothesis context to review before saving. A label-result source link returns to its exact label/run after call review. Saving original transcript evidence into a case happens in Call detail; no model quote is silently treated as authoritative source text.
 
+## Tracking over time
+
+A label owner can track one version of a label after a completed full run of that exact version (`POST /api/intelligence/labels/:id/tracking` with `{version, enabled}`). Enabling first confirms, on behalf of the owner, that at least one completely masked transcript in the label's queue scope is readable. The subscription and the frozen revision are stored in `label_tracking` (see `resources/label-tracking.sql`); owners read it through `label_tracking_visible`.
+
+The daily `call-insights-label-tracker` job (`resources/label-tracker.yml`, notebook `Call Insights Label Tracker`) selects completely masked calls in scope that this label version has not yet evaluated in a full or tracking run, freezes them into a `tracking` run, and runs the existing worker notebook on it. Tracking respects the owner's daily token budget and a per-label cap (`max_per_label`, default 2,000). Prevalence over time (`label_tracking_trend`) uses the latest verdict per call across the version's full and tracking runs. Enabled tracked labels also feed the overview's “What's changed” comparison.
+
+The tracker runs as the job's run-as identity, not the label owner. Approve that identity's source access as a shared entitlement before other users enable tracking, and test a restricted second identity before claiming access-control acceptance.
+
 ## Integration
 
 The server receives the approved app-state `DocumentStore` and an SDK-only job runner:

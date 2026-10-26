@@ -8,6 +8,8 @@ describe('source evidence navigation', () => {
     );
     expect(evidenceReturnPath('/cases/8dc0-134a')).toBe('/cases/8dc0-134a');
     expect(evidenceReturnPath('/labels/ef2a-355b')).toBe('/labels/ef2a-355b');
+    expect(evidenceReturnPath('/themes/th-1a2b?period=7d&queue=all')).toBe('/themes/th-1a2b?period=7d&queue=all');
+    expect(evidenceReturnPath('/?period=1d&queue=Payments')).toBe('/?period=1d&queue=Payments');
   });
   it('rejects external or ambiguous return paths', () => {
     for (const path of [

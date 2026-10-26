@@ -7,6 +7,7 @@
 -- @param contact_reason STRING
 -- @param sentiment STRING
 -- @param enriched_only STRING
+-- @param theme_id STRING
 -- @param page_size INT = 25
 -- @param row_offset INT = 0
 WITH mask_inventory AS (
@@ -59,6 +60,9 @@ WITH mask_inventory AS (
     AND (:sentiment = '' OR sentiment_end = :sentiment)
     AND (:enriched_only <> 'true' OR is_enriched)
     AND (:search_text = '' OR keyword_match = 1)
+    AND (:theme_id = '' OR EXISTS (
+      SELECT 1 FROM serverless_stable_prvwqx_catalog.call_insights.theme_membership_current tm
+      WHERE tm.interaction_id = scoped.interaction_id AND tm.theme_id = :theme_id))
 )
 SELECT interaction_id, started_at, queue, agent_name, duration_seconds,
   longest_silence_seconds, contact_reason, sentiment_end, resolution_status,

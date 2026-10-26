@@ -1,0 +1,32 @@
+# Discovers themes from enriched calls and publishes the latest run for the app.
+# Run-as needs SELECT on interactions/interaction_enrichment/hvb_calls, MODIFY on theme_* tables,
+# and query permission on the embedding and naming endpoints.
+resources:
+  jobs:
+    theme_builder:
+      name: call-insights-theme-builder
+      tags:
+        aidevkit_project: ai-dev-kit
+      max_concurrent_runs: 1
+      run_as:
+        user_name: brian.law@databricks.com
+      schedule:
+        # Weekly, Monday 06:17 Perth. Run it on demand after enriching new calls.
+        quartz_cron_expression: '0 17 6 ? * MON'
+        timezone_id: Australia/Perth
+        pause_status: UNPAUSED
+      tasks:
+        - task_key: build_themes
+          notebook_task:
+            notebook_path: ../../../notebooks/harper_valley_bank/Call Insights Theme Builder.py
+            base_parameters:
+              catalog: serverless_stable_prvwqx_catalog
+              schema: call_insights
+              embedding_endpoint: databricks-gte-large-en
+              naming_endpoint: databricks-claude-haiku-4-5
+          environment_key: theme_environment
+          timeout_seconds: 3600
+      environments:
+        - environment_key: theme_environment
+          spec:
+            environment_version: '4'

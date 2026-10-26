@@ -3,6 +3,8 @@ bundle:
 
 include:
   - resources/label-worker.yml
+  - resources/theme-builder.yml
+  - resources/label-tracker.yml
 
 sync:
   paths:

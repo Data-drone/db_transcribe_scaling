@@ -7,7 +7,9 @@
   "scripts": {
     "start": "NODE_ENV=production node --env-file-if-exists=./.env ./dist/server.js",
     "dev": "NODE_ENV=development tsx watch --tsconfig ./tsconfig.server.json --env-file-if-exists=./.env ./server/server.ts",
+    "dev:sample": "VITE_DATA_SOURCE=fixtures vite --config client/vite.config.ts",
     "build:client": "tsc -b tsconfig.client.json && vite build --config client/vite.config.ts",
+    "build:sample": "VITE_DATA_SOURCE=fixtures vite build --config client/vite.config.ts --outDir ../dist-sample",
     "build:server": "tsc -b tsconfig.server.json && tsdown -c tsdown.server.config.ts",
     "build": "pnpm run build:server && pnpm run build:client",
     "typecheck": "tsc -b tsconfig.server.json && tsc -b tsconfig.client.json",

@@ -10,11 +10,29 @@ export const clipInputSchema = z
   })
   .refine((value) => value.end > value.start && value.end - value.start <= 600, 'Choose an excerpt up to ten minutes.');
 export const noteInputSchema = z.object({ type: z.literal('note'), note: z.string().trim().min(1).max(4000) });
-export const evidenceInputSchema = z.union([clipInputSchema, noteInputSchema]);
+/** Context items record what an analyst saw (a theme or label result) at a stated scope. */
+export const themeEvidenceInputSchema = z.object({
+  type: z.literal('theme'),
+  refId: z.string().regex(/^[A-Za-z0-9_-]{1,80}$/),
+  title: z.string().trim().min(1).max(200),
+  scope: z.string().trim().max(300).default(''),
+  note: z.string().trim().min(1).max(4000),
+});
+export const labelEvidenceInputSchema = z.object({
+  type: z.literal('label'),
+  refId: z.string().trim().min(1).max(80),
+  title: z.string().trim().min(1).max(200),
+  scope: z.string().trim().max(300).default(''),
+  note: z.string().trim().min(1).max(4000),
+});
+export const evidenceInputSchema = z.union([clipInputSchema, noteInputSchema, themeEvidenceInputSchema, labelEvidenceInputSchema]);
 export const evidenceItemSchema = z.object({
   id: z.string(),
-  type: z.enum(['clip', 'note']),
+  type: z.enum(['clip', 'note', 'theme', 'label']),
   interactionId: z.string().optional(),
+  refId: z.string().optional(),
+  title: z.string().optional(),
+  scope: z.string().optional(),
   start: z.number().optional(),
   end: z.number().optional(),
   note: z.string(),

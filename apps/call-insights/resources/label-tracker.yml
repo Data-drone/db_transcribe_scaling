@@ -1,0 +1,30 @@
+# Daily incremental evaluation of tracked labels. Runs the label worker notebook per new cohort.
+# Run-as needs the label worker's grants plus SELECT, MODIFY on label_tracking.
+resources:
+  jobs:
+    label_tracker:
+      name: call-insights-label-tracker
+      tags:
+        aidevkit_project: ai-dev-kit
+      max_concurrent_runs: 1
+      run_as:
+        user_name: brian.law@databricks.com
+      schedule:
+        quartz_cron_expression: '0 43 5 * * ?'
+        timezone_id: Australia/Perth
+        pause_status: UNPAUSED
+      tasks:
+        - task_key: track_labels
+          notebook_task:
+            notebook_path: ../../../notebooks/harper_valley_bank/Call Insights Label Tracker.py
+            base_parameters:
+              catalog: serverless_stable_prvwqx_catalog
+              schema: call_insights
+              max_per_label: '2000'
+              daily_token_budget: '5000000'
+          environment_key: tracker_environment
+          timeout_seconds: 14400
+      environments:
+        - environment_key: tracker_environment
+          spec:
+            environment_version: '4'

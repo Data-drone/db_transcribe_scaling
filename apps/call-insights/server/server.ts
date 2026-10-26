@@ -3,6 +3,7 @@ import { AUDIO_VOLUME_ROOT, audioFilesConfiguration, createAudioHandler } from '
 import { registerInvestigationRoutes } from './investigations/routes';
 import { createSourceReader } from './investigations/sources';
 import { createLakebaseDocumentStore, initializeAppState, requestActor, respondError } from './investigations/storage';
+import { createInsightsQueries, registerInsightsRoutes } from './insights/routes';
 import { registerIntelligenceRoutes } from './intelligence/routes';
 import { createLabelJobRunner } from './intelligence/worker';
 
@@ -21,6 +22,7 @@ createApp({
     await initializeAppState(appkit.lakebase);
     const store = createLakebaseDocumentStore(appkit.lakebase);
     const sources = createSourceReader(appkit);
+    const insights = createInsightsQueries(appkit);
     appkit.server.extend((app) => {
       app.get('/api/whoami', (req, res) => {
         res.setHeader('Cache-Control', 'private, no-store');
@@ -31,6 +33,7 @@ createApp({
           respondError(res, error);
         }
       });
+      registerInsightsRoutes(app, insights);
       registerInvestigationRoutes(app, store, sources);
       app.get(
         '/api/calls/:interactionId/audio',
